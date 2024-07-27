@@ -1,0 +1,55 @@
+import express from "express";
+import mongoose from "mongoose";
+import userRouter from "./routes/user.route.js";
+import authRouter from "./routes/auth.route.js";
+import dotenv from "dotenv";
+dotenv.config();
+
+const app = express();
+// to allow json data to the backend 
+app.use(express.json());
+
+// // import cors for cross origin resource sharing
+import cors from "cors";
+// Enable CORS for all routes
+app.use(cors());
+
+// Alternatively, configure CORS for specific origins
+// app.use(cors({
+//   origin: 'http://localhost:5173'  // Only allow this origin to access the resources
+// }));
+
+// import routes
+// conntect to mongodb
+// Check if the environment variable is loaded
+// console.log("MONGO_URL:",process.env.MONGO_URL);
+mongoose
+  .connect(process.env.MONGO_URL)
+  .then(() => {
+    console.log("Connected to MongoDB!!");
+  })
+  .catch((err) => {
+    console.log("Error:", err.message);
+  });
+
+
+app.listen(3000, () => {
+  console.log("Server is running on port 3000!!");
+});
+
+// create a route
+app.use("/api/users", userRouter);
+app.use('/api/auth',authRouter);
+
+
+// global error handler middleware
+
+app.use((err,req,res,next)=>{
+  const statusCode=res.statusCode||500;
+  const message=err.message||"Internal server error";
+  res.status(statusCode).json({
+    success:false,
+    statusCode,
+    message
+  });
+})
