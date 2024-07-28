@@ -4,10 +4,13 @@ import userRouter from "./routes/user.route.js";
 import authRouter from "./routes/auth.route.js";
 import dotenv from "dotenv";
 dotenv.config();
+import cookieParser from "cookie-parser";
 
 const app = express();
 // to allow json data to the backend 
 app.use(express.json());
+// cookie parser middleware which will parse the cookies from the request
+app.use(cookieParser());
 
 // // import cors for cross origin resource sharing
 import cors from "cors";

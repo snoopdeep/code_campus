@@ -11,7 +11,7 @@ export default function Header() {
   // to get current user from redux toolkit
   const { currentUser } = useSelector((state) => state.user);
   const {theme}=useSelector((state)=>state.theme);
-  console.log("current user", currentUser);
+  // console.log("current user", currentUser);
   // console.log(currentUser.profilePicture);
   // to active the path ie color effect when we on that page
   const path = useLocation().pathname;

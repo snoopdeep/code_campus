@@ -36,7 +36,7 @@ export const signup = async (req, res, next) => {
   }
 };
 
-export const signin = async (req, res) => {
+export const signin = async (req, res,next) => {
   console.log("Hello from signin controller ", " Request body:", req.body);
   try {
     const { email, password } = req.body;
@@ -60,7 +60,7 @@ export const signin = async (req, res) => {
     });
     res
       .status(200)
-      .cookie("access token", token, { httpOnly: true })
+      .cookie("access_token", token, { httpOnly: true })
       .json(validUser);
   } catch (err) {
     console.log("Error:", err.message);
@@ -80,7 +80,7 @@ export const google = async (req, res, next) => {
       user.password = undefined;
       res
         .status(200)
-        .cookie("access token", token, { httpOnly: true })
+        .cookie("access_token", token, { httpOnly: true })
         .json(user);
     } else {
       const generatePassword = Math.random().toString(36).slice(-8);
@@ -97,7 +97,7 @@ export const google = async (req, res, next) => {
       console.log("New User successfully created in database!");
       const token=jwt.sign({id:newUser._id},process.env.JWT_SECRET,{expiresIn:"1h"});
       newUser.password=undefined;
-      res.status(200).cookie("access token",token,{httpOnly:true}).json(newUser);
+      res.status(200).cookie("access_token",token,{httpOnly:true}).json(newUser);
     }
   } catch (err) {
     next(err);
