@@ -9,6 +9,8 @@ import SignUp from './pages/SignUp'
 import Project from './pages/Project'
 import Header from './components/Header'
 import Footer from './components/Footer'
+import CreatePost from './pages/CreatePost'
+import PrivateAdminRoute from "./components/PrivateAdminRoute.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 
 
@@ -24,6 +26,10 @@ export default function App() {
       <Route element={<PrivateRoute/>}>
       <Route path='/dashboard' element={<Dashboard/>}></Route>
       </Route>
+      <Route element={<PrivateAdminRoute/>}>
+      <Route path='/create-post' element={<CreatePost/>}></Route>
+      </Route>
+      
       <Route path='/sign-in' element={<SignIn/>}></Route>
       <Route path='/sign-up' element={<SignUp/>}></Route>
       <Route path='/projects' element={<Project/>}></Route>
