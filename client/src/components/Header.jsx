@@ -5,6 +5,7 @@ import { AiOutlineSearch } from "react-icons/ai";
 import { FaMoon,FaSun } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { toggleTheme } from "../redux/theme/themeSlice";
+import { signOutSuccess } from "../redux/user/userSlice";
 export default function Header() {
   // initialize dispatch to use the action
   const dispatch = useDispatch();
@@ -15,6 +16,24 @@ export default function Header() {
   // console.log(currentUser.profilePicture);
   // to active the path ie color effect when we on that page
   const path = useLocation().pathname;
+
+  // handle signout
+  const handleSignOut = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/api/users/signout", {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        console.log(data.message);
+      } else {
+        dispatch(signOutSuccess());
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
   return (
     <Navbar className="border-b-2">
       <Link
@@ -71,7 +90,7 @@ export default function Header() {
               <Dropdown.Item>Profile</Dropdown.Item>
             </Link>
             <Dropdown.Divider />
-            <Dropdown.Item>Sign out</Dropdown.Item>
+            <Dropdown.Item onClick={handleSignOut}>Sign out</Dropdown.Item>
           </Dropdown>
         ) : (
           <Link to={"/sign-in"}>
