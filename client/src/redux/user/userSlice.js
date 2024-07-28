@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { act } from 'react';
 
 const initialState = {
     currentUser:null,
@@ -21,8 +22,21 @@ export const userSlice = createSlice({
             state.loading=false;
             state.error=true;
         },
+        updateStart:(state)=>{
+            state.loading=true;
+            state.error=false;
+        },
+        updateSuccess:(state,action)=>{
+            state.currentUser=action.payload;
+            state.loading=false;
+            state.error=false;
+        },
+        updateFailure:(state,action)=>{
+            state.loading=false;
+            state.error=action.payload;
+        },
     }
 })
-export const {signInStart,signInSuccess,signInFail}=userSlice.actions;
+export const {signInStart,signInSuccess,signInFail, updateFailure, updateStart, updateSuccess}=userSlice.actions;
 // export userReducer to add in store
 export default userSlice.reducer;

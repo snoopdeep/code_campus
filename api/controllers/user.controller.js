@@ -24,35 +24,35 @@ export const updateUser = async (req, res, next) => {
     }
   }
   // if password is correct then encrypt it
-  if(req.body.password){
-  console.log("Password:",req.body.password);
-  req.body.password = bcryptjs.hashSync(req.body.password, 10);
+  if (req.body.password) {
+    console.log("Password:", req.body.password);
+    req.body.password = bcryptjs.hashSync(req.body.password, 10);
   }
   // check username
-  if (req.body.name){
-    if(req.body.name.length < 5 || req.body.name.length > 20) {
-    return next(
-      errorHandler(400, "Username should be between 5 and 20 characters long")
-    );
+  if (req.body.name) {
+    if (req.body.name.length < 5 || req.body.name.length > 20) {
+      return next(
+        errorHandler(400, "Username should be between 5 and 20 characters long")
+      );
+    }
+    if (req.body.name.includes(" ")) {
+      return next(errorHandler(400, "Username should not contain spaces"));
+    }
+    if (req.body.name !== req.body.name.toLowerCase()) {
+      return next(errorHandler(400, "Username should be in lowercase"));
+    }
+    if (req.body.name.match(/[^a-z0-9]/)) {
+      return next(
+        errorHandler(400, "Username should contain only letters and numbers")
+      );
+    }
   }
-  if (req.body.name.includes(" ")) {
-    return next(errorHandler(400, "Username should not contain spaces"));
-  }
-  if (req.body.name !== req.body.name.toLowerCase()) {
-    return next(errorHandler(400, "Username should be in lowercase"));
-  }
-  if (req.body.name.match(/[^a-z0-9]/)) {
-    return next(
-      errorHandler(400, "Username should contain only letters and numbers")
-    );
-  }
-}
   try {
     const upadatedUser = await User.findByIdAndUpdate(
       req.params.userId,
       {
         $set: {
-          name: req.body.name,
+          name: req.body.username,
           email: req.body.email,
           profilePicture: req.body.profilePicture,
           password: req.body.password,
@@ -60,6 +60,8 @@ export const updateUser = async (req, res, next) => {
       },
       { new: true }
     );
+    console.log("updated user", upadatedUser);
+    // await upadatedUser.save();
     // seperate the password from the user object
     upadatedUser.password = undefined;
     res.status(200).json(upadatedUser);

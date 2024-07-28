@@ -15,7 +15,11 @@ app.use(cookieParser());
 // // import cors for cross origin resource sharing
 import cors from "cors";
 // Enable CORS for all routes
-app.use(cors());
+// app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', // Adjust according to your front-end URL
+  credentials: true // This allows cookies to be sent with the requests
+}));
 
 // Alternatively, configure CORS for specific origins
 // app.use(cors({
@@ -39,7 +43,15 @@ mongoose
 app.listen(3000, () => {
   console.log("Server is running on port 3000!!");
 });
-
+// middleware to log the cookies
+app.use((req, res, next) => {
+  console.log("Cookies: ", req.headers.cookie);
+  next();
+});
+app.use((req, res, next) => {
+  console.log('Incoming Headers:', req.headers);
+  next();
+});
 // create a route
 app.use("/api/users", userRouter);
 app.use('/api/auth',authRouter);
