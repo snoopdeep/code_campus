@@ -9,8 +9,8 @@ export const create = async (req, res, next) => {
   if (!req.body.title || !req.body.content) {
     return res.status(400).json({ message: "Title and content are required" });
   }
-  console.log(req.user.id);
-  console.log('req.user:', req.user);  // Log the req.user object to check its content
+//   console.log(req.user.id);
+//   console.log('req.user:', req.user);  // Log the req.user object to check its content
   const slug = req.body.title
     .toLowerCase()
     .split(" ")
@@ -21,7 +21,7 @@ export const create = async (req, res, next) => {
       slug,
       userId: req.user.id,
   });
-  console.log("post", post);
+//   console.log("post", post);
   try{
     const savedPost = await post.save();
     res.status(201).json(savedPost);
