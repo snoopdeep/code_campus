@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import DashSidbar from "../components/DashSidebar.jsx";
 import DashProfile from "../components/DashProfile.jsx";
+import DashPosts from "../components/DashPosts.jsx";
 import React from "react";
 
 export default function Dashboard() {
@@ -27,7 +28,8 @@ export default function Dashboard() {
       <div className="flex-1 flex justify-center items-center">
         {/* // show profile only when tab is profile */}
         {tab === "profile" && <DashProfile />}
-        {/* <DashProfile /> */}
+        {/* show posts only when tab is posts */}
+        {tab === "posts" && <DashPosts/>}
       </div>
     </div>
   );
