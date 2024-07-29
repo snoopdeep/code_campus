@@ -45,10 +45,10 @@ app.listen(3000, () => {
   console.log("Server is running on port 3000!!");
 });
 // middleware to log the cookies
-app.use((req, res, next) => {
-  console.log("Cookies: ", req.headers.cookie);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log("Cookies: ", req.headers.cookie);
+//   next();
+// });
 app.use((req, res, next) => {
   console.log('Incoming Headers:', req.headers);
   next();
