@@ -73,9 +73,17 @@ export const updateUser = async (req, res, next) => {
 // delete user controller
 
 export const deleteUser = async (req, res, next) => {
-  if (req.params.userId !== req.user.id) {
-    return next(errorHandler(401, "You are not allowed to delete this user"));
+  console.log('hi from delete user');
+  // if user is admin do not delete
+  // console.log(req.user);
+  if (req.user.id===req.params.userId) {
+    return next(errorHandler(403, "You are admin and you can't delete yourself"));
   }
+  // console.log('req.params.userId',req.params.userId);
+  // console.log('req.user.id',req.user.id);
+  // if (req.params.userId !== req.user.id) {
+  //   return next(errorHandler(401, "You are not allowed to delete this user"));
+  // }
   try {
     await User.findByIdAndDelete(req.params.userId);
     res.status(200).json("User has been deleted");
