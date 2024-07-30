@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 export default function DashPosts() {
   const [userPosts, setUserPosts] = useState([]);
   const { currentUser } = useSelector((state) => state.user);
+  const [showMore, setShowMore] = useState(true);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -16,6 +17,9 @@ export default function DashPosts() {
         const data = await res.json();
         if (res.ok) {
           setUserPosts(data.posts);
+          if(data.posts.length < 9) {
+            setShowMore(false);
+          }
         }
       } catch (err) {
         console.log(err.message);
@@ -27,7 +31,23 @@ export default function DashPosts() {
     }
   }, [currentUser]);
   console.log(userPosts);
+// handleShowMore function
+const handleShowMore = async () => {
+  const startIndex=userPosts.length;
+  try{
+    const res= await fetch(`http://localhost:3000/api/post/getposts?${currentUser._id}&startIndex=${startIndex}`);
+    const data=await res.json();
+    if(res.ok){
+      setUserPosts((prev)=>[...prev,...data.posts]);
+      if(data.posts.length<9){
+        setShowMore(false);
+    }
+  }
 
+  }catch(err){
+    console.log(err.message);
+  }
+}
   return (
     <div
       className="table-auto overflow-x-scroll md:mx-auto scrollbar scrollbar-track-slate-100
@@ -87,6 +107,13 @@ export default function DashPosts() {
               ))}
             </Table.Body>
           </Table>
+          {
+            showMore&&(
+              <button className="w-full text-teal-500 self-center text-sm py-7" onClick={handleShowMore}>
+                Show more
+              </button>
+            )
+          }
         </>
       ) : (
         <p>No posts available</p>
