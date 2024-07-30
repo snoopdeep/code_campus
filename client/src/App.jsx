@@ -13,6 +13,7 @@ import CreatePost from './pages/CreatePost'
 import PrivateAdminRoute from "./components/PrivateAdminRoute.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import UpdatePost from './pages/UpdatePost.jsx'
+import PostPage from './pages/PostPage'
 
 
 export default function App() {
@@ -35,6 +36,7 @@ export default function App() {
       <Route path='/sign-in' element={<SignIn/>}></Route>
       <Route path='/sign-up' element={<SignUp/>}></Route>
       <Route path='/projects' element={<Project/>}></Route>
+      <Route path='/post/:postSlug' element={<PostPage/>}></Route>
     </Routes>
        {/* /* // Adding footer component to all the pages */ }
     <Footer/>
