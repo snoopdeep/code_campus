@@ -17,6 +17,7 @@ export const verifyToken=async(req, res,next)=> {
       }
       req.user=user;
     //   console.log(req);
+    console.log('User is verified');
       next();
   
     }

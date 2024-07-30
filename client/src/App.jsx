@@ -14,11 +14,13 @@ import PrivateAdminRoute from "./components/PrivateAdminRoute.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import UpdatePost from './pages/UpdatePost.jsx'
 import PostPage from './pages/PostPage'
+import ScrollToTop from './components/ScrollToTop'
 
 
 export default function App() {
   return (
     <BrowserRouter>
+    <ScrollToTop/>
     {/* /* // Adding Header component to all the pages */ }
     <Header/>
     <Routes>
