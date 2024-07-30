@@ -2,22 +2,29 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Table, TableBody, TableCell, TableRow } from "flowbite-react";
 import { Link } from "react-router-dom";
+import { HiOutlineExclamationCircle } from "react-icons/hi";
+import { Button, Modal } from "flowbite-react";
 
 export default function DashPosts() {
   const [userPosts, setUserPosts] = useState([]);
   const { currentUser } = useSelector((state) => state.user);
   const [showMore, setShowMore] = useState(true);
+  const [showModel, setShowModel] = useState(false);
+  const [postId, setPostId] = useState(null);
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const res = await fetch(
-          `http://localhost:3000/api/post/getposts?${currentUser._id}`
+          `http://localhost:3000/api/post/getposts?${currentUser._id}`,{
+            method: "GET",
+            credentials: "include",
+          }
         );
         const data = await res.json();
         if (res.ok) {
           setUserPosts(data.posts);
-          if(data.posts.length < 9) {
+          if (data.posts.length < 9) {
             setShowMore(false);
           }
         }
@@ -31,23 +38,49 @@ export default function DashPosts() {
     }
   }, [currentUser]);
   console.log(userPosts);
-// handleShowMore function
-const handleShowMore = async () => {
-  const startIndex=userPosts.length;
-  try{
-    const res= await fetch(`http://localhost:3000/api/post/getposts?${currentUser._id}&startIndex=${startIndex}`);
-    const data=await res.json();
-    if(res.ok){
-      setUserPosts((prev)=>[...prev,...data.posts]);
-      if(data.posts.length<9){
-        setShowMore(false);
+  // handleShowMore function
+  const handleShowMore = async () => {
+    const startIndex = userPosts.length;
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/post/getposts?${currentUser._id}&startIndex=${startIndex}`,{
+          credentials: "include",
+          method: "GET",
+        }
+      );
+      const data = await res.json();
+      if (res.ok) {
+        setUserPosts((prev) => [...prev, ...data.posts]);
+        if (data.posts.length < 9) {
+          setShowMore(false);
+        }
+      }
+    } catch (err) {
+      console.log(err.message);
     }
-  }
+  };
 
-  }catch(err){
-    console.log(err.message);
-  }
-}
+  // handleDeletePost function
+  const handleDeletePost = async () => {
+    setShowModel(false);
+    console.log('hid from handleDeletePost', postId,currentUser);
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/post/deletepost/${postId}/${currentUser._id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+      const data = await res.json();
+      if(!res.ok){
+             console.log(data.message);
+      }else{
+        // delete the post from the userPosts state
+        setUserPosts((prev) => prev.filter((post) => post._id !== postId));
+      }
+    } catch (err) {}
+  };
   return (
     <div
       className="table-auto overflow-x-scroll md:mx-auto scrollbar scrollbar-track-slate-100
@@ -94,12 +127,21 @@ const handleShowMore = async () => {
                   </TableCell>
                   <TableCell>{post.category}</TableCell>
                   <TableCell>
-                    <span className="font-medium text-red-500 hover:underline cursor-pointer">
+                    <span
+                      onClick={() => {
+                        setShowModel(true);
+                        setPostId(post._id);
+                      }}
+                      className="font-medium text-red-500 hover:underline cursor-pointer"
+                    >
                       Delete
                     </span>
                   </TableCell>
                   <TableCell>
-                    <Link to={`/update-post/${post._id}`} className="text-teal-500 hover:underline">
+                    <Link
+                      to={`/update-post/${post._id}`}
+                      className="text-teal-500 hover:underline"
+                    >
                       <span>Edit</span>
                     </Link>
                   </TableCell>
@@ -107,17 +149,52 @@ const handleShowMore = async () => {
               ))}
             </Table.Body>
           </Table>
-          {
-            showMore&&(
-              <button className="w-full text-teal-500 self-center text-sm py-7" onClick={handleShowMore}>
-                Show more
-              </button>
-            )
-          }
+          {showMore && (
+            <button
+              className="w-full text-teal-500 self-center text-sm py-7"
+              onClick={handleShowMore}
+            >
+              Show more
+            </button>
+          )}
         </>
       ) : (
         <p>No posts available</p>
       )}
+      <Modal
+        show={showModel}
+        onClose={() => setShowModel(false)}
+        popup
+        size={"md"}
+      >
+        <Modal.Header />
+        <Modal.Body>
+          <div className="text-center">
+            <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
+            <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
+              Are you sure you want to delete your account
+            </h3>
+            <div className="flex justify-center gap-4 ">
+              <Button
+                color={"failure"}
+                onClick={() => {
+                  handleDeletePost();
+                }}
+                className="mr-2"
+              >
+                Yes, I'm sure
+              </Button>
+              <Button
+                color={"gray"}
+                onClick={() => setShowModel(false)}
+                className="ml-2"
+              >
+                No, cancle
+              </Button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 }

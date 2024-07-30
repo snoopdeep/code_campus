@@ -49,10 +49,10 @@ app.listen(3000, () => {
 //   console.log("Cookies: ", req.headers.cookie);
 //   next();
 // });
-app.use((req, res, next) => {
-  console.log('Incoming Headers:', req.headers);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log('Incoming Headers:', req.headers);
+//   next();
+// });
 // create a route
 app.use("/api/users", userRouter);
 app.use('/api/auth',authRouter);
