@@ -144,3 +144,18 @@ export const getUsers = async (req, res, next) => {
     next(error);
   }
 };
+
+// get user controller
+export const getUser = async (req, res, next) => {
+  try {
+    console.log('hi from get user controller');
+    const user = await User.findById(req.params.userId);
+    if(!user){
+      return next(errorHandler(404,'User not found'));
+    }
+    const { password, ...rest } = user._doc;
+    res.status(200).json(rest);
+  } catch (err) {
+    next(err);
+  }
+};
