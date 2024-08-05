@@ -4,15 +4,17 @@ import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import Comment from "./Comment";
+import { useNavigate } from "react-router-dom";
 
 export default function CommentSection({ postId }) {
   const { currentUser } = useSelector((state) => state.user);
   const [comment, setComment] = useState("");
   const [commentError, setCommentError] = useState(null);
   const [comments, setComments] = useState([]);
+  const navigate = useNavigate();
   console.log("comments are ", comments);
-  console.log("post id is ", postId);
-  console.log("current user is ", currentUser);
+  // console.log("post id is ", postId);
+  // console.log("current user is ", currentUser);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,6 +65,43 @@ export default function CommentSection({ postId }) {
     };
     getConmments();
   }, [postId]);
+
+  const handleLikeComment = async (commentId) => {
+    console.log("hi from handle like comment");
+    try {
+      if (!currentUser) {
+        navigate("/sign-in");
+        return;
+      }
+      const res = await fetch(
+        `http://localhost:3000/api/comment/likeComment/${commentId}`,
+        {
+          method: "PUT",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setComments(
+          comments.map((comment) =>
+            comment._id === commentId
+              ? {
+                  ...comment,
+                  likes: data.likes,
+                  numberOfLikes: data.numberOfLikes,
+                }
+              : comment
+          )
+        );
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
     <div className="max-w-2xl mx-auto w-full p-3">
       {currentUser ? (
@@ -126,11 +165,12 @@ export default function CommentSection({ postId }) {
           </div>
         )}
         {comments.map((comment) => (
-          // <React.Fragment key={comment._id}>
-            <Comment key={comment._id} comment={comment} />
-          // </React.Fragment>
+          <Comment
+            key={comment._id}
+            comment={comment}
+            onLike={handleLikeComment}
+          />
         ))}
-        
       </>
     </div>
   );
