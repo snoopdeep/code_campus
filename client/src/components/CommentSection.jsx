@@ -5,12 +5,16 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import Comment from "./Comment";
 import { useNavigate } from "react-router-dom";
+import { Modal } from "flowbite-react";
+import { HiOutlineExclamationCircle } from "react-icons/hi";
 
 export default function CommentSection({ postId }) {
   const { currentUser } = useSelector((state) => state.user);
   const [comment, setComment] = useState("");
   const [commentError, setCommentError] = useState(null);
   const [comments, setComments] = useState([]);
+  const [showModel,setShowModel]=useState(false);
+  const [commentToDelete,setCommentToDelete]=useState(null);
   const navigate = useNavigate();
   // console.log("comments are ", comments);
   // console.log("post id is ", postId);
@@ -110,6 +114,22 @@ export default function CommentSection({ postId }) {
       // if that comment match then only change the content of it else set to comment only for others.. 
     }))
   }
+  const handleDeleteComment= async()=>{
+    setShowModel(false);
+    try{  
+      if(!currentUser){
+        navigate('/sign-in');
+        return;
+      }
+        const response= await fetch(`http://localhost:3000/api/comment/deleteComment/${commentToDelete}`,{
+          credentials:"include",
+          method:"DELETE",
+        });
+        setComments(comments.filter(comment=>comment._id!==commentToDelete));
+    }catch(err){
+      console.log(err);
+    }
+  }
   // comments.map(comment=>console.log(comment._id));
   return (
     <div className="max-w-2xl mx-auto w-full p-3">
@@ -179,10 +199,52 @@ export default function CommentSection({ postId }) {
             comment={comment}
             onLike={handleLikeComment}
             onEdit={handleEdit}
+            // {/* This onDelete is triger from the Comment.jsx and so after that we want a pop up so load the model and 
+            //   and set the comment id via a state and from the model i'm calling that deleteComment function. */}
+            onDelete={(commentId)=>{ 
+              setShowModel(true);
+              setCommentToDelete(commentId);
+            }}
           />
         ))}
+        {/* //pop up model */}
+        <Modal
+        show={showModel}
+        onClose={() => setShowModel(false)}
+        popup
+        size={"md"}
+      >
+        <Modal.Header />
+        <Modal.Body>
+          <div className="text-center">
+            <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
+            <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
+              Are you sure you want to delete this comment?
+            </h3>
+            <div className="flex justify-center gap-4 ">
+              <Button
+                color={"failure"}
+                onClick={() => {
+                  handleDeleteComment();
+                }}
+                className="mr-2"
+              >
+                Yes, I'm sure
+              </Button>
+              <Button
+                color={"gray"}
+                onClick={() => setShowModel(false)}
+                className="ml-2"
+              >
+                No, cancle
+              </Button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
       </>
     </div>
+    
   );
 }
 
