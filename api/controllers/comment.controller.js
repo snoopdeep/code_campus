@@ -91,8 +91,8 @@ export const deleteComment = async (req, res, next) => {
   try {
     const commentId = req.params.commentId;
     const comment = await Comment.findById(commentId);
-    if(!comment){
-      return next(errorHandler(404,"Comment not found"))
+    if (!comment) {
+      return next(errorHandler(404, "Comment not found"));
     }
     if (comment.userId !== req.user.id || !req.user.isAdmin) {
       return next(
@@ -104,6 +104,35 @@ export const deleteComment = async (req, res, next) => {
       res.status(200).json({ message: "comment deleted successfully" });
     }
   } catch (err) {
+    next(err);
+  }
+};
+
+// get all comments
+export const getAllComments = async (req, res, next) => {
+  try {
+    if (!req.user.isAdmin)
+      return next(errorHandler(404, "you are not allow to get all comments"));
+    const startIndex = parseInt(req.query.startIndex) || 0;
+    const limit = parseInt(req.query.limit) || 9;
+    const sortD = req.query.sort === "desc" ? -1 : 1;
+    const comments = await Comment.find()
+      .sort({ createdAt: sortD })
+      .skip(startIndex)
+      .limit(limit);
+    const totalComments = await Comment.countDocuments();
+    const now = new Date();
+    const oneMonthAgo = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      now.getDate()
+    );
+    const lastMonthComments = await Comment.countDocuments({
+      createdAt: { $gte: oneMonthAgo },
+    });
+    res.status(200).json({ comments, totalComments, lastMonthComments });
+  } catch (err) {
+    console.log(err);
     next(err);
   }
 };
