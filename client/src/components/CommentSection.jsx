@@ -199,8 +199,6 @@ export default function CommentSection({ postId }) {
             comment={comment}
             onLike={handleLikeComment}
             onEdit={handleEdit}
-            // {/* This onDelete is triger from the Comment.jsx and so after that we want a pop up so load the model and 
-            //   and set the comment id via a state and from the model i'm calling that deleteComment function. */}
             onDelete={(commentId)=>{ 
               setShowModel(true);
               setCommentToDelete(commentId);
