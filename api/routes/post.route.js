@@ -6,8 +6,8 @@ import { deletePost } from "../controllers/post.controller.js";
 import { updatePost } from "../controllers/post.controller.js";
 const router=express.Router();
 
-router.post('/create',verifyToken,create);
 router.get('/getposts',getposts);
+router.post('/create',verifyToken,create);
 router.delete('/deletepost/:postId/:userId',verifyToken,deletePost);
 router.put('/updatepost/:postId/:userId',verifyToken,updatePost);
 export default router;

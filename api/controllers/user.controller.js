@@ -6,9 +6,9 @@ import { errorHandler } from "../util/error.js";
 // }
 // export default test;
 
-export const test = (req, res) => {
-  res.send("Hello from user controller!!");
-};
+// export const test = (req, res) => {
+//   res.send("Hello from user controller!!");
+// };
 
 export const updateUser = async (req, res, next) => {
   // check if the user id in the request is the same as the user id in the token

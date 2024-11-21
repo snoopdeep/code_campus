@@ -9,7 +9,7 @@ dotenv.config();
 import cookieParser from "cookie-parser";
 
 const app = express();
-// to allow json data to the backend 
+// to allow json data to the backend
 app.use(express.json());
 // cookie parser middleware which will parse the cookies from the request
 app.use(cookieParser());
@@ -18,10 +18,12 @@ app.use(cookieParser());
 import cors from "cors";
 // Enable CORS for all routes
 // app.use(cors());
-app.use(cors({
-  origin: 'http://localhost:5173', // Adjust according to your front-end URL
-  credentials: true // This allows cookies to be sent with the requests
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Adjust according to your front-end URL
+    credentials: true, // This allows cookies to be sent with the requests
+  })
+);
 
 // Alternatively, configure CORS for specific origins
 // app.use(cors({
@@ -41,7 +43,6 @@ mongoose
     console.log("Error:", err.message);
   });
 
-
 app.listen(3000, () => {
   console.log("Server is running on port 3000!!");
 });
@@ -56,19 +57,18 @@ app.listen(3000, () => {
 // });
 // create a route
 app.use("/api/users", userRouter);
-app.use('/api/auth',authRouter);
-app.use('/api/post',postRouter);
-app.use('/api/comment',commentRouter);
-
+app.use("/api/auth", authRouter);
+app.use("/api/post", postRouter);
+app.use("/api/comment", commentRouter);
 
 // global error handler middleware
 
-app.use((err,req,res,next)=>{
-  const statusCode=res.statusCode||500;
-  const message=err.message||"Internal server error";
+app.use((err, req, res, next) => {
+  const statusCode = res.statusCode || 500;
+  const message = err.message || "Internal server error";
   res.status(statusCode).json({
-    success:false,
+    success: false,
     statusCode,
-    message
+    message,
   });
-})
+});

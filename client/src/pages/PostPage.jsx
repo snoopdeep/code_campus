@@ -32,7 +32,7 @@ export default function PostPage() {
           setLoading(false);
           setError(false);
         }
-        console.log(postSlug);
+        // console.log(postSlug);
       } catch (error) {
         setError(true);
         setLoading(false);
@@ -41,7 +41,7 @@ export default function PostPage() {
     };
     fetchPost();
   }, [postSlug]);
-  console.log(post);
+  // console.log(post);
   if (loading)
     return (
       <div>

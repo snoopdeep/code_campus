@@ -12,9 +12,9 @@ export default function CommentSection({ postId }) {
   const [commentError, setCommentError] = useState(null);
   const [comments, setComments] = useState([]);
   const navigate = useNavigate();
-  console.log("comments are ", comments);
+  // console.log("comments are ", comments);
   // console.log("post id is ", postId);
-  // console.log("current user is ", currentUser);
+  console.log("current user is ", currentUser);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +36,7 @@ export default function CommentSection({ postId }) {
         }),
       });
       const data = await res.json();
-      console.log(data);
+      // console.log(data);
       if (res.ok) {
         setComment("");
         setCommentError(null);
@@ -67,7 +67,7 @@ export default function CommentSection({ postId }) {
   }, [postId]);
 
   const handleLikeComment = async (commentId) => {
-    console.log("hi from handle like comment");
+    // console.log("hi from handle like comment");
     try {
       if (!currentUser) {
         navigate("/sign-in");
@@ -102,6 +102,15 @@ export default function CommentSection({ postId }) {
     }
   };
 
+  const handleEdit=function(commentID,updatedComment){
+    console.log('this is handle edit.. ');
+    console.log(commentID,updatedComment);
+    setComments(comments.map(comment=>{
+     return comment._id===commentID?{...comment, content:updatedComment}:comment;
+      // if that comment match then only change the content of it else set to comment only for others.. 
+    }))
+  }
+  // comments.map(comment=>console.log(comment._id));
   return (
     <div className="max-w-2xl mx-auto w-full p-3">
       {currentUser ? (
@@ -169,9 +178,11 @@ export default function CommentSection({ postId }) {
             key={comment._id}
             comment={comment}
             onLike={handleLikeComment}
+            onEdit={handleEdit}
           />
         ))}
       </>
     </div>
   );
 }
+

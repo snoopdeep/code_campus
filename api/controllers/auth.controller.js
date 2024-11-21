@@ -37,7 +37,7 @@ export const signup = async (req, res, next) => {
   }
 };
 
-export const signin = async (req, res,next) => {
+export const signin = async (req, res, next) => {
   console.log("Hello from signin controller ", " Request body:", req.body);
   try {
     const { email, password } = req.body;
@@ -56,9 +56,13 @@ export const signin = async (req, res,next) => {
     // user is validate
     // remove password fiels from the user object
     validUser.password = undefined;
-    const token = jwt.sign({ id: validUser._id, isAdmin:validUser.isAdmin }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { id: validUser._id, isAdmin: validUser.isAdmin },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
     res
       .status(200)
       .cookie("access_token", token, { httpOnly: true })
@@ -75,9 +79,13 @@ export const google = async (req, res, next) => {
   try {
     const user = await User.findOne({ email });
     if (user) {
-      const token = jwt.sign({ id: user._id,isAdmin: user.isAdmin }, process.env.JWT_SECRET, {
-        expiresIn: "1h",
-      });
+      const token = jwt.sign(
+        { id: user._id, isAdmin: user.isAdmin },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "1h",
+        }
+      );
       user.password = undefined;
       res
         .status(200)
@@ -96,9 +104,16 @@ export const google = async (req, res, next) => {
       });
       await newUser.save();
       console.log("New User successfully created in database!");
-      const token=jwt.sign({id:newUser._id, isAdmin:newUser.isAdmin},process.env.JWT_SECRET,{expiresIn:"1h"});
-      newUser.password=undefined;
-      res.status(200).cookie("access_token",token,{httpOnly:true}).json(newUser);
+      const token = jwt.sign(
+        { id: newUser._id, isAdmin: newUser.isAdmin },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+      newUser.password = undefined;
+      res
+        .status(200)
+        .cookie("access_token", token, { httpOnly: true })
+        .json(newUser);
     }
   } catch (err) {
     next(err);

@@ -3,6 +3,7 @@ import React from "react";
 import { AiFillGoogleCircle } from "react-icons/ai";
 import { GoogleAuthProvider, signInWithPopup, getAuth } from "firebase/auth";
 import { app } from "../firebase";
+// console.log(GoogleAuthProvider,signInWithPopup,getAuth,app);
 
 import {
   signInStart,
