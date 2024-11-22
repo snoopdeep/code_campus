@@ -1,8 +1,15 @@
-import React from "react";
-import { Navbar, TextInput, Button, Dropdown, Avatar, theme } from "flowbite-react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import {
+  Navbar,
+  TextInput,
+  Button,
+  Dropdown,
+  Avatar,
+  theme,
+} from "flowbite-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AiOutlineSearch } from "react-icons/ai";
-import { FaMoon,FaSun } from "react-icons/fa";
+import { FaMoon, FaSun } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { toggleTheme } from "../redux/theme/themeSlice";
 import { signOutSuccess } from "../redux/user/userSlice";
@@ -11,12 +18,20 @@ export default function Header() {
   const dispatch = useDispatch();
   // to get current user from redux toolkit
   const { currentUser } = useSelector((state) => state.user);
-  const {theme}=useSelector((state)=>state.theme);
+  const { theme } = useSelector((state) => state.theme);
+  const [searchTerm, setSearchTerm] = useState("");
+  const location = useLocation();
+  const navigate = useNavigate();
   // console.log("current user", currentUser);
   // console.log(currentUser.profilePicture);
   // to active the path ie color effect when we on that page
   const path = useLocation().pathname;
 
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const searchTemFromURL = urlParams.get("searchTerm");
+    if (searchTemFromURL) setSearchTerm(searchTemFromURL);
+  }, [location]);
   // handle signout
   const handleSignOut = async () => {
     try {
@@ -34,6 +49,14 @@ export default function Header() {
       console.log(err);
     }
   };
+  const handleSubmit = (e) => {
+    console.log("hii",e);
+    e.preventDefault();
+    const urlParams = new URLSearchParams(location.search);
+    urlParams.set("searchTerm", searchTerm);
+    const searchQ = urlParams.toString();
+    navigate(`/search?${searchQ}`);
+  };
   return (
     <Navbar className="border-b-2">
       <Link
@@ -45,12 +68,14 @@ export default function Header() {
         </span>
         Campus
       </Link>
-      <form>
+      <form onSubmit={handleSubmit}>
         <TextInput
           type="text"
           placeholder="Search..."
           rightIcon={AiOutlineSearch}
           className="hidden lg:inline"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
       </form>
       <Button className="w-12 h-10 lg:hidden" color={"gray"} pill>
@@ -64,7 +89,7 @@ export default function Header() {
           onClick={() => dispatch(toggleTheme())}
         >
           {/* // if theme is light then show sun icon else moon icon */}
-          {theme==='light'?<FaSun/>:<FaMoon/>}
+          {theme === "light" ? <FaSun /> : <FaMoon />}
           {/* <FaMoon /> */}
         </Button>
         {/* // if user is logged in then show them the dropdown+ avatar else sign in button */}
