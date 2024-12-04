@@ -16,19 +16,22 @@ export default function PostPage() {
   const [error, setError] = useState(null);
   const [post, setPost] = useState(null);
   const [recentPosts, setRecentPosts] = useState(null);
+  console.log('post slug is ',postSlug);
 
   useEffect(() => {
     const fetchPost = async () => {
       try {
         setLoading(true);
         const res = await fetch(
-          `http://localhost:3000/api/post/getposts?slug=${postSlug}`,
+          `http://localhost:3000/api/post/getAllPosts?slug=${postSlug}`,
           {
             method: "GET",
             credentials: "include",
           }
         );
+        console.log(res);
         const data = await res.json();
+        console.log('this is PostPage.jsx and data is ',data);
         if (!res.ok) {
           setError(true);
           setLoading(false);
@@ -48,11 +51,13 @@ export default function PostPage() {
     fetchPost();
   }, [postSlug]);
 
+  console.log('this is postPage.jsx and post is :', post);
+
   useEffect(() => {
     const getRecentPost = async () => {
       try {
         const posts = await fetch(
-          `http://localhost:3000/api/post/getposts?limit=3`,
+          `http://localhost:3000/api/post/getAllPosts?limit=3`,
           {
             method: "GET",
             credentials: "include",
@@ -68,6 +73,7 @@ export default function PostPage() {
     };
     getRecentPost();
   }, []);
+  console.log(recentPosts);
 
   // Highlight code blocks after content is loaded
   useEffect(() => {

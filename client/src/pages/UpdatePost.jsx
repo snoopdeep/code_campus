@@ -1,19 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Button, TextInput, Select, FileInput, Alert } from "flowbite-react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   getDownloadURL,
   getStorage,
   ref,
   uploadBytesResumable,
 } from "firebase/storage";
-// for circular progress bar
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 export default function UpdatePost() {
@@ -26,10 +23,15 @@ export default function UpdatePost() {
     image: "",
     content: "",
   });
-  const [publishError, setpublishError] = useState(null);
+  const [publishError, setPublishError] = useState(null);
+  const [publishSuccess, setPublishSuccess] = useState(null);
   const { postId } = useParams();
   const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
+
+  // Refs to store timer IDs
+  const errorTimerRef = useRef(null);
+  const successTimerRef = useRef(null);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -43,19 +45,19 @@ export default function UpdatePost() {
         );
         const data = await res.json();
         if (!res.ok) {
-          setpublishError(data.message);
+          setPublishError(data.message || "Failed to fetch the post.");
           return;
         }
-        setpublishError(null);
+        setPublishError(null);
         setFormData({
           title: data.posts[0].title,
           category: data.posts[0].category,
           image: data.posts[0].image,
           content: data.posts[0].content,
         });
-        console.log(formData);
       } catch (error) {
         console.log(error);
+        setPublishError("Failed to fetch the post.");
       }
     };
 
@@ -115,19 +117,54 @@ export default function UpdatePost() {
       );
       const data = await res.json();
       if (!res.ok) {
-        setpublishError(data.message);
+        setPublishError(data.message || "Failed to update the post.");
+        // Start timer to clear error after 5 seconds
+        if (errorTimerRef.current) {
+          clearTimeout(errorTimerRef.current);
+        }
+        errorTimerRef.current = setTimeout(() => {
+          setPublishError(null);
+        }, 5000);
         return;
       }
-      setpublishError(null);
-      navigate(`/post/${data.slug}`);
+      setPublishError(null);
+      setPublishSuccess("Updated Successfully");
+
+      // Start timer to clear success message and redirect after 5 seconds
+      if (successTimerRef.current) {
+        clearTimeout(successTimerRef.current);
+      }
+      successTimerRef.current = setTimeout(() => {
+        navigate(`/post/${data.slug}`);
+      }, 5000);
     } catch (error) {
-      setpublishError("Something went wrong");
+      console.log(error);
+      setPublishError("Something went wrong");
+      // Start timer to clear error after 5 seconds
+      if (errorTimerRef.current) {
+        clearTimeout(errorTimerRef.current);
+      }
+      errorTimerRef.current = setTimeout(() => {
+        setPublishError(null);
+      }, 5000);
     }
   };
 
+  useEffect(() => {
+    // Cleanup timers on component unmount
+    return () => {
+      if (errorTimerRef.current) {
+        clearTimeout(errorTimerRef.current);
+      }
+      if (successTimerRef.current) {
+        clearTimeout(successTimerRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div className="p-3 max-w-3xl mx-auto min-h-screen">
-      <h1 className="text-center text-3xl my-7 font-semibold">Update post</h1>
+      <h1 className="text-center text-3xl my-7 font-semibold">Update Post</h1>
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <div className="flex flex-col gap-4 sm:flex-row justify-between">
           <TextInput
@@ -171,7 +208,7 @@ export default function UpdatePost() {
               <div className="w-16 h-16">
                 <CircularProgressbar
                   value={imageUploadProgress}
-                  text={`${imageUploadProgress}%` || 0}
+                  text={`${imageUploadProgress}%`}
                 />
               </div>
             ) : (
@@ -198,9 +235,10 @@ export default function UpdatePost() {
           value={formData.content}
         />
         <Button type="submit" gradientDuoTone="purpleToPink">
-          Update post
+          Update Post
         </Button>
         {publishError && <Alert color="failure">{publishError}</Alert>}
+        {publishSuccess && <Alert color="success">{publishSuccess}</Alert>}
       </form>
     </div>
   );

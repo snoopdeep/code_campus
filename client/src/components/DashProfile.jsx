@@ -317,7 +317,7 @@ export default function DashProfile() {
         >
           {loading ? "Loading..." : "Update"}
         </Button>
-        {currentUser &&currentUser.isAdmin&&( 
+        {currentUser &&( 
           // .isAdmin && changing that all the verified user can post a blog
           <Link to={"/create-post"}>
             <Button

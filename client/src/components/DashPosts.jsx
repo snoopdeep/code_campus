@@ -33,7 +33,7 @@ export default function DashPosts() {
       }
     };
 
-    if (currentUser?.isAdmin) {
+    if (currentUser) {
       fetchPosts();
     }
   }, [currentUser]);
@@ -86,7 +86,7 @@ export default function DashPosts() {
       className="table-auto overflow-x-scroll md:mx-auto scrollbar scrollbar-track-slate-100
     scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-500 dark:scrollbar-track-slate-500"
     >
-      {currentUser?.isAdmin && userPosts.length > 0 ? (
+      {currentUser && userPosts.length > 0 ? (
         <>
           <Table hoverable className="shadow-md">
             <Table.Head>

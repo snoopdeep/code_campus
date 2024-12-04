@@ -2,6 +2,7 @@ import { Button, Select, TextInput } from 'flowbite-react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import PostCard from '../components/PostCard';
+import { useSelector } from 'react-redux';
 
 export default function Search() {
   const [sidebarData, setSidebarData] = useState({
@@ -14,6 +15,8 @@ export default function Search() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showMore, setShowMore] = useState(false);
+  const {currentUser}= useSelector((state)=>state.user);
+  console.log('current user is : ',currentUser);
 
   const location = useLocation();
 
@@ -36,7 +39,10 @@ export default function Search() {
     const fetchPosts = async () => {
       setLoading(true);
       const searchQuery = urlParams.toString();
-      const res = await fetch(`http://localhost:3000/api/post/getposts?${searchQuery}`);
+      const res = await fetch(`http://localhost:3000/api/post/getAllPosts?${searchQuery}`,{
+        method:"GET",
+        credentials:"include",
+      });
       if (!res.ok) {
         setLoading(false);
         return;

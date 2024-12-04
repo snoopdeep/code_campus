@@ -199,6 +199,7 @@ export default function CreatePost() {
         body: JSON.stringify(formData),
       });
       const data = await res.json();
+      console.log("this is create post.jsx and data is ",data);
       if (!res.ok) {
         setPublishError(data.message);
         return;
@@ -208,7 +209,7 @@ export default function CreatePost() {
         setPublishSuccess("Post Created Successfully");
         // Navigate after success
         setTimeout(() => {
-          navigate("/posts");
+          navigate(`/post/${data.slug}`);
         }, 1500);
       }
     } catch (error) {
