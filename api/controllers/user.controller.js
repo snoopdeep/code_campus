@@ -1,15 +1,13 @@
 import bcryptjs from "bcryptjs";
 import User from "../models/user.model.js";
 import { errorHandler } from "../util/error.js";
-// function test(req,res){
-//     res.send("Hello from user controller!!");
-// }
-// export default test;
 
-// export const test = (req, res) => {
-//   res.send("Hello from user controller!!");
-// };
 
+
+function checkPassword(str) {
+  var re = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+  return re.test(str);
+}
 export const updateUser = async (req, res, next) => {
   // check if the user id in the request is the same as the user id in the token
   if (req.params.userId !== req.user.id) {
@@ -17,9 +15,13 @@ export const updateUser = async (req, res, next) => {
   }
   // now check all the data in the request body
   if (req.body.password) {
-    if (req.body.password.length < 6) {
+    // password should have at least 8 char includeing upper and lower case with digit and one special character
+    if (!checkPassword(req.body.password)) {
       return next(
-        errorHandler(400, "Password should be at least 6 characters long")
+        errorHandler(
+          400,
+          "password must be at least 8 char long and have at least one upper, one lower, one digit and one special character."
+        )
       );
     }
   }
@@ -70,24 +72,40 @@ export const updateUser = async (req, res, next) => {
   }
 };
 
-// delete user controller
+// // delete user controller
 
 export const deleteUser = async (req, res, next) => {
-  console.log('hi from delete user');
-  // if user is admin do not delete
-  // console.log(req.user);
-  if (req.user.id===req.params.userId) {
-    return next(errorHandler(403, "You are admin and you can't delete yourself"));
-  }
-  // console.log('req.params.userId',req.params.userId);
-  // console.log('req.user.id',req.user.id);
-  // if (req.params.userId !== req.user.id) {
-  //   return next(errorHandler(401, "You are not allowed to delete this user"));
-  // }
+
+  const userIdToDelete = req.params.userId;
+  const requestingUserId = req.user.id;
+  const isAdmin = req.user.isAdmin;
+
   try {
-    await User.findByIdAndDelete(req.params.userId);
-    res.status(200).json("User has been deleted");
+    const userToDelete = await User.findById(userIdToDelete);
+    if (!userToDelete) {
+      return next(errorHandler(404, "User not found"));
+    }
+
+    if (isAdmin) {
+      if (requestingUserId.toString() === userIdToDelete.toString()) {
+        return next(
+          errorHandler(403, "Admins cannot delete themselves")
+        );
+      }
+    } else {
+      if (requestingUserId.toString() !== userIdToDelete.toString()) {
+        // Non-admin trying to delete someone else
+        return next(
+          errorHandler(403, "You can only delete your own account")
+        );
+      }
+    }
+
+    //delete the user
+    await User.findByIdAndDelete(userIdToDelete);
+    res.status(200).json({ message: "User has been deleted" });
   } catch (err) {
+    console.error("Error deleting user:", err.message);
     next(err);
   }
 };
@@ -105,12 +123,12 @@ export const signout = (req, res, next) => {
 // get users controller
 export const getUsers = async (req, res, next) => {
   if (!req.user.isAdmin) {
-    return next(errorHandler(403, 'You are not allowed to see all users'));
+    return next(errorHandler(403, "You are not allowed to see all users"));
   }
   try {
     const startIndex = parseInt(req.query.startIndex) || 0;
     const limit = parseInt(req.query.limit) || 9;
-    const sortDirection = req.query.sort === 'asc' ? 1 : -1;
+    const sortDirection = req.query.sort === "asc" ? 1 : -1;
 
     const users = await User.find()
       .sort({ createdAt: sortDirection })
@@ -148,10 +166,10 @@ export const getUsers = async (req, res, next) => {
 // get user controller
 export const getUser = async (req, res, next) => {
   try {
-    console.log('hi from get user controller');
+    console.log("hi from get user controller");
     const user = await User.findById(req.params.userId);
-    if(!user){
-      return next(errorHandler(404,'User not found'));
+    if (!user) {
+      return next(errorHandler(404, "User not found"));
     }
     const { password, ...rest } = user._doc;
     res.status(200).json(rest);

@@ -2,6 +2,11 @@ import User from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { errorHandler } from "../util/error.js";
+
+function checkPassword(str) {
+  var re = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+  return re.test(str);
+}
 export const signup = async (req, res, next) => {
   console.log("Hello from signup controller ", " Request body:", req.body);
   const { name, email, password } = req.body;
@@ -13,9 +18,16 @@ export const signup = async (req, res, next) => {
     email === "" ||
     password === ""
   ) {
-    // return res.status(400).json({ message: "All fields are required" });
-    // use the error handler function for custom error messages
     return next(errorHandler(400, "All fields are required"));
+  }
+  // password should have at least 8 char includeing upper and lower case with digit and one special character
+  if (!checkPassword(password)) {
+    return next(
+      errorHandler(
+        400,
+        "password must be at least 8 char long and have at least one upper, one lower, one digit and one special character."
+      )
+    );
   }
   const hashedPassword = bcryptjs.hashSync(password, 10);
   try {
@@ -25,15 +37,12 @@ export const signup = async (req, res, next) => {
       password: hashedPassword,
     });
     console.log("New User successfully created in database!");
-    //if const newUser= new User({}) then call => await newUser.save();
     return res
       .status(201)
       .json({ message: "User created successfully", user: newUser });
   } catch (err) {
     console.log(err.message);
     next(err);
-    // console.log("Error:",err.message);
-    // return res.status(500).json({message:"Internal server error",error:err.message});
   }
 };
 
@@ -54,13 +63,12 @@ export const signin = async (req, res, next) => {
       return next(errorHandler(400, "Invalid password"));
     }
     // user is validate
-    // remove password fiels from the user object
     validUser.password = undefined;
     const token = jwt.sign(
       { id: validUser._id, isAdmin: validUser.isAdmin },
       process.env.JWT_SECRET,
       {
-        expiresIn: "1h",
+        expiresIn: 1000 * 60 * 5,
       }
     );
     res

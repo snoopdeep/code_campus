@@ -1,18 +1,42 @@
 import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { signInStart,signInSuccess,signInFail } from "../redux/user/userSlice";
+import {
+  signInStart,
+  signInSuccess,
+  signInFail,
+} from "../redux/user/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import OAuth from "../components/OAuth";
 
-
 export default function SignIn() {
-  const [formData, setFormData] = React.useState({});
-  const { loding, error:errorMessage } = useSelector((state) => state.user);
+  const [formData, setFormData] = React.useState({
+    email: "",
+    password: "",
+  });
+  const { loading, error: errorMessage } = useSelector((state) => state.user);
   // const [errorMessage, setErrorMessage] = React.useState(null);
   // const [loding, setLoading] = React.useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  // Reset error || after 5 seconds
+  useEffect(() => {
+    dispatch(signInFail(null));
+    setFormData({ email: "", password: "" }); // Reset form fields
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (errorMessage) {
+      setFormData({ email: "", password: "" }); // Reset form fields
+      const timer = setTimeout(() => {
+        dispatch(signInFail(null)); // Reset the error
+      }, 7000);
+
+      return () => clearTimeout(timer); // Cleanup the timer on component unmount
+    }
+  }, [errorMessage, dispatch]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value.trim() }); // if someone adds space in the input field, it will be removed by trim()
   };
@@ -34,7 +58,7 @@ export default function SignIn() {
       dispatch(signInStart());
       const res = await fetch("http://localhost:3000/api/auth/signin", {
         method: "POST",
-        credentials: 'include',
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -43,20 +67,23 @@ export default function SignIn() {
       const data = await res.json();
       // if same name and email is already present in the database show error message
       if (data.success === false) {
+        console.log(data.message);
+        setFormData({ email: "", password: "" }); // Reset form fields
         dispatch(signInFail(data.message));
         // return setErrorMessage(data.message);
       }
-      if(res.ok){
+      if (res.ok) {
         dispatch(signInSuccess(data));
         navigate("/");
       }
       // setLoading(false);
     } catch (err) {
       // user is not able to connect to the server or internet issue
-    //   setLoading(false);
-    //   console.error(err);
-    //  return setErrorMessage(err.message);
-    dispatch(signInFail(err.message));
+      //   setLoading(false);
+      //   console.error(err);
+      //  return setErrorMessage(err.message);
+      setFormData({ email: "", password: "" }); // Reset form fields
+      dispatch(signInFail(err.message || "An unexpected error occurred"));
     }
   };
   // console.log(formData);
@@ -94,6 +121,7 @@ export default function SignIn() {
                 type="email"
                 placeholder="name@company.com"
                 id="email"
+                value={formData.email} // for controllable form data
                 onChange={handleChange}
               ></TextInput>
             </div>
@@ -103,24 +131,25 @@ export default function SignIn() {
                 type="password"
                 placeholder="*******"
                 id="password"
+                value={formData.password}
                 onChange={handleChange}
               ></TextInput>
             </div>
             <Button
               gradientDuoTone={"purpleToPink"}
               type="submit"
-              disabled={loding}
+              disabled={loading}
             >
-              {loding ? (
+              {loading ? (
                 <>
                   <Spinner size="sm"></Spinner>
-                  <span className="pl-3">Loaing...</span>
+                  <span className="pl-3">Loading...</span>
                 </>
               ) : (
                 "Sign In"
               )}
             </Button>
-            <OAuth/>
+            <OAuth />
           </form>
           <div className="flex gap-2 text-sm mt-5">
             <span> Don't Have an account:</span>

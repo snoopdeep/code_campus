@@ -1,11 +1,11 @@
 import Post from "../models/post.model.js";
 import { errorHandler } from "../util/error.js";
 export const create = async (req, res, next) => {
-  if (!req.user.isAdmin) {
-    return res
-      .status(403)
-      .json({ message: "You are not allowed to create a post" });
-  }
+  // if (!req.user.isAdmin) {
+  //   return res
+  //     .status(403)
+  //     .json({ message: "You are not allowed to create a post" });
+  // }
   if (!req.body.title || !req.body.content) {
     return res.status(400).json({ message: "Title and content are required" });
   }

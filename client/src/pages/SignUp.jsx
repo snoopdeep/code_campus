@@ -1,16 +1,35 @@
 import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import OAuth from "../components/OAuth";
 
 export default function SignUp() {
-  const [formData, setFormData] = React.useState({});
+  const [formData, setFormData] = React.useState({
+    name: "",
+    email: "",
+    password: "",
+  });
   const [errorMessage, setErrorMessage] = React.useState(null);
+  const [successMessage, setSuccessMessage] = React.useState(null);
   const [loding, setLoading] = React.useState(false);
   const navigate = useNavigate();
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value.trim() }); // if someone adds space in the input field, it will be removed by trim()
   };
+  useEffect(() => {
+    if (errorMessage) {
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+      });
+      const timer = setTimeout(() => {
+        setErrorMessage(null);
+      }, 7000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMessage]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (
@@ -28,7 +47,7 @@ export default function SignUp() {
       setErrorMessage(null); // clean the previous error message
       const res = await fetch("http://localhost:3000/api/auth/signup", {
         method: "POST",
-        credentials: 'include',
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -37,17 +56,33 @@ export default function SignUp() {
       const data = await res.json();
       // if same name and email is already present in the database show error message
       if (data.success === false) {
+        setLoading(false);
+        setFormData({
+          name: "",
+          email: "",
+          password: "",
+        });
         return setErrorMessage(data.message);
       }
-      if(res.ok){
-        navigate("/sign-in");
+      if (res.ok) {
+        setSuccessMessage(
+          "Sign Up Successfully!! Redirecting to login page ..."
+        );
+        setTimeout(() => {
+          navigate("/sign-in");
+        }, 5000);
       }
       setLoading(false);
     } catch (err) {
       // user is not able to connect to the server or internet issue
       setLoading(false);
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+      });
       console.error(err);
-     return setErrorMessage(err.message);
+      return setErrorMessage(err.message);
     }
   };
   // console.log(formData);
@@ -76,6 +111,7 @@ export default function SignUp() {
                 type="text"
                 placeholder="Username"
                 id="name"
+                value={formData.name}
                 onChange={handleChange}
               ></TextInput>
             </div>
@@ -85,6 +121,7 @@ export default function SignUp() {
                 type="email"
                 placeholder="name@company.com"
                 id="email"
+                value={formData.email}
                 onChange={handleChange}
               ></TextInput>
             </div>
@@ -94,6 +131,7 @@ export default function SignUp() {
                 type="password"
                 placeholder="Password"
                 id="password"
+                value={formData.password}
                 onChange={handleChange}
               ></TextInput>
             </div>
@@ -111,7 +149,7 @@ export default function SignUp() {
                 "Sign Up"
               )}
             </Button>
-            <OAuth/>
+            <OAuth />
           </form>
           <div className="flex gap-2 text-sm mt-5">
             <span> Have an account:</span>
@@ -123,6 +161,12 @@ export default function SignUp() {
           {errorMessage && (
             <Alert className="mt-5" color={"failure"}>
               {errorMessage}
+            </Alert>
+          )}
+          {/* // display success message */}
+          {successMessage && (
+            <Alert className="mt-5" color={"success"}>
+              {successMessage}
             </Alert>
           )}
         </div>

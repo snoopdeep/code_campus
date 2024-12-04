@@ -17,8 +17,10 @@ import {
   updateSuccess,
   deleteUserStart,
   deleteUserSuccess,
-  deteleUserFailure,
+  deleteUserFailure,
+  signOutStart,
   signOutSuccess,
+  signOutFailure,
 } from "../redux/user/userSlice";
 import { useDispatch } from "react-redux";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
@@ -27,7 +29,7 @@ import { Link } from "react-router-dom";
 export default function DashProfile() {
   const dispatch = useDispatch();
   const filePickerRef = useRef();
-  const { currentUser, error,loading } = useSelector((state) => state.user);
+  const { currentUser, error, loading } = useSelector((state) => state.user);
   // state for imagefile and imgUrl
   const [imageFile, setImageFile] = useState(null);
   const [imgFileUrl, setImgFileUrl] = useState(null);
@@ -38,10 +40,17 @@ export default function DashProfile() {
   const [updateUserSuccess, setUpdateUserSuccess] = useState(null);
   const [updateUserError, setUpdateUserError] = useState(null);
   const [showModel, setShowModel] = useState(false);
-  console.log("currentUser", currentUser);
+  console.log(
+    "currentUser :",
+    currentUser,
+    "error: ",
+    error,
+    "loading :",
+    loading
+  );
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    console.log(file);
+    // console.log(file);
     if (file) {
       setImageFile(file);
       const imgUrl = URL.createObjectURL(file);
@@ -106,6 +115,7 @@ export default function DashProfile() {
       }
     );
   };
+
   // Handle clearing the error after 5 seconds
   useEffect(() => {
     if (imgFileUploadError) {
@@ -118,14 +128,11 @@ export default function DashProfile() {
     }
   }, [imgFileUploadError]); // Only re-run the effect if the error state changes
 
-  // console.log(imgFileUploadError, imgFileUploadProgress);
-  // console.log("imageFile:", imageFile, "imgUri", imgFileUrl);
-
   // handleChange function
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
-  // console.log("formData", formData);
+
   // handle submit
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -140,16 +147,10 @@ export default function DashProfile() {
     }
     try {
       dispatch(updateStart());
-      // console.log("This is from handleSubmit and form data is", formData);
-      // console.log(
-      //   "This is from handleSubmit and user id is .. ",
-      //   currentUser._id
-      // );
       const res = await fetch(
         `http://localhost:3000/api/users/update/${currentUser._id}`,
         {
-          // method: "PUT",
-          method: "PUT", // or 'PUT', 'POST', etc.
+          method: "PUT",
           credentials: "include", // Ensures cookies are included in the request
           headers: {
             "Content-Type": "application/json",
@@ -168,7 +169,7 @@ export default function DashProfile() {
       }
     } catch (err) {
       dispatch(updateFailure(err.message));
-      setUpdateUserError(data.message);
+      setUpdateUserError(err.message);
     }
   };
   // handle delete user
@@ -186,12 +187,13 @@ export default function DashProfile() {
       );
       const data = await res.json();
       if (!res.ok) {
-        dispatch(deteleUserFailure(data.message));
+        dispatch(deleteUserFailure(data.message));
       } else {
         dispatch(deleteUserSuccess(data));
       }
     } catch (err) {
-      dispatch(deteleUserFailure(err.message));
+      console.log(err);
+      dispatch(deleteUserFailure(err.message));
     }
     return;
   };
@@ -199,6 +201,7 @@ export default function DashProfile() {
   // handle signout
   const handleSignOut = async () => {
     try {
+      dispatch(signOutStart());
       const res = await fetch("http://localhost:3000/api/users/signout", {
         method: "POST",
         credentials: "include",
@@ -206,13 +209,32 @@ export default function DashProfile() {
       const data = await res.json();
       if (!res.ok) {
         console.log(data.message);
+        dispatch(signOutFailure(data.message));
       } else {
         dispatch(signOutSuccess());
       }
     } catch (err) {
       console.log(err);
+      dispatch(signOutFailure(err.message));
     }
   };
+  // clearing the error message on refresh or after 7 sec
+  useEffect(() => {
+    dispatch(updateFailure(null));
+    setUpdateUserError(null);
+    setUpdateUserSuccess(null);
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (error || updateUserError || updateUserSuccess) {
+      const timer = setTimeout(() => {
+        setUpdateUserSuccess(null);
+        setUpdateUserError(null);
+        dispatch(updateFailure(null));
+      }, 7000);
+      return () => setTimeout(timer);
+    }
+  }, [dispatch, error, updateUserError, updateUserSuccess]);
   return (
     <div className=" max-w-lg mx-auto p-3 w-full">
       <h1 className="my-7 text-center font-semibold text-3xl">Profile</h1>
@@ -287,18 +309,24 @@ export default function DashProfile() {
           placeholder="password"
           onChange={handleChange}
         ></TextInput>
-        <Button type="submit" gradientDuoTone="purpleToBlue" outline disabled={loading||imageFileUploading}>
-          {loading?'Loading...':'Update'}
+        <Button
+          type="submit"
+          gradientDuoTone="purpleToBlue"
+          outline
+          disabled={loading || imageFileUploading}
+        >
+          {loading ? "Loading..." : "Update"}
         </Button>
-        {currentUser.isAdmin && (
-          <Link to={'/create-post'}>
-          <Button
-            type="button"
-            gradientDuoTone={"purpleToBlue"}
-            className="w-full"
-          >
-            Create a post
-          </Button>
+        {currentUser &&currentUser.isAdmin&&( 
+          // .isAdmin && changing that all the verified user can post a blog
+          <Link to={"/create-post"}>
+            <Button
+              type="button"
+              gradientDuoTone={"purpleToBlue"}
+              className="w-full"
+            >
+              Create a post
+            </Button>
           </Link>
         )}
       </form>

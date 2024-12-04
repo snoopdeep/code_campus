@@ -4,12 +4,19 @@ import { Button, Spinner } from "flowbite-react";
 import CallToAction from "../components/CallToAction";
 import CommentSection from "../components/CommentSection";
 import PostCard from "../components/PostCard";
+import DOMPurify from 'dompurify';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/github.css';
+// import '../styles/custom-highlight.css'; // Correct relative path
+// import "highlight.js/styles/monokai.css";
+
 export default function PostPage() {
   const { postSlug } = useParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [post, setPost] = useState(null);
   const [recentPosts, setRecentPosts] = useState(null);
+
   useEffect(() => {
     const fetchPost = async () => {
       try {
@@ -32,7 +39,6 @@ export default function PostPage() {
           setLoading(false);
           setError(false);
         }
-        // console.log(postSlug);
       } catch (error) {
         setError(true);
         setLoading(false);
@@ -52,9 +58,7 @@ export default function PostPage() {
             credentials: "include",
           }
         );
-        // console.log(posts);
         const data = await posts.json();
-        console.log(data.posts);
         if (data) {
           setRecentPosts(data.posts);
         }
@@ -65,7 +69,15 @@ export default function PostPage() {
     getRecentPost();
   }, []);
 
-  console.log(recentPosts);
+  // Highlight code blocks after content is loaded
+  useEffect(() => {
+    if (post) {
+      document.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightBlock(block);
+      });
+    }
+  }, [post]);
+
   if (loading)
     return (
       <div>
@@ -74,8 +86,21 @@ export default function PostPage() {
         </div>
       </div>
     );
+
+  // Sanitize and prepare HTML content
+  const sanitizedContent = post ? DOMPurify.sanitize(post.content, {
+    ALLOWED_TAGS: [
+      'p', 'br', 'strong', 'em', 'u', 's', 'a', 
+      'ul', 'ol', 'li', 
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'blockquote', 'code', 'pre', 
+      'img'
+    ],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'class']
+  }) : '';
+
   return (
-    <main className=" p-3 flex flex-col max-w-6xl mx-auto min-h-screen">
+    <main className="p-3 flex flex-col max-w-6xl mx-auto min-h-screen">
       <h1 className="text-3xl mt-10 p-3 text-center font-serif max-w-2xl mx-auto lg:text-4xl">
         {post && post.title}
       </h1>
@@ -98,15 +123,31 @@ export default function PostPage() {
           {post && (post.content.length / 1000).toFixed(0)} mins read
         </span>
       </div>
-      <div
-        className="p-3 max-w-2xl mx-auto w-full post-content"
-        dangerouslySetInnerHTML={{ __html: post && post.content }}
+      
+      {/* Enhanced content rendering with custom styles */}
+      <div 
+        className="p-3 max-w-2xl mx-auto w-full post-content prose prose-lg 
+        prose-headings:text-gray-900 
+        prose-p:text-gray-700 
+        prose-ul:list-disc 
+        prose-ol:list-decimal 
+        prose-ul:pl-6 
+        prose-ol:pl-6 
+        prose-code:bg-gray-600 
+        prose-code:p-1 
+        prose-code:rounded 
+        prose-pre:bg-gray-600 
+        prose-pre:p-4 
+        prose-pre:rounded"
+        dangerouslySetInnerHTML={{ __html: sanitizedContent }}
       ></div>
+      
       <div className="max-w-4xl mx-auto w-full">
         <CallToAction />
       </div>
+      
       <CommentSection postId={post._id} />
-
+      
       <div className="flex flex-col justify-center items-center mb-5">
         <h1 className="text-xl mt-5">Recent Articles</h1>
         <div className="flex flex-wrap gap-5 mt-5 justify-center">

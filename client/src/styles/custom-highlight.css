@@ -1,0 +1,42 @@
+/* src/styles/custom-highlight.css */
+
+/* General code block styling */
+.hljs {
+    background: #f5f5f5; /* Light gray background */
+    color: #333333;      /* Dark text color */
+    padding: 1em;        /* Optional: Add some padding */
+    border-radius: 5px;  /* Optional: Rounded corners */
+    overflow-x: auto;    /* Enable horizontal scrolling for long lines */
+  }
+  
+  /* Customize specific syntax elements */
+  
+  /* Keywords */
+  .hljs-keyword {
+    color: #007ACC; /* Dark blue for keywords */
+    font-weight: bold;
+  }
+  
+  /* Strings */
+  .hljs-string {
+    color: #A31515; /* Dark red for strings */
+  }
+  
+  /* Comments */
+  .hljs-comment {
+    color: #008000; /* Green for comments */
+    font-style: italic;
+  }
+  
+  /* Function names */
+  .hljs-title.function_ {
+    color: #795E26; /* Brown for function names */
+  }
+  
+  /* Numbers */
+  .hljs-number {
+    color: #098658; /* Dark green for numbers */
+  }
+  
+  /* Add more custom styles as needed */
+  

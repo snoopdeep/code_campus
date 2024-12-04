@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema(
   },
   profilePicture:{
     type: String,
-    default: "https://rb.gy/sck637",
+    default: "https://isobarscience-1bfd8.kxcdn.com/wp-content/uploads/2020/09/default-profile-picture1.jpg",
   },
   isAdmin:{
     type: Boolean,

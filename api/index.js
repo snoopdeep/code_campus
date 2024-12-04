@@ -46,25 +46,17 @@ mongoose
 app.listen(3000, () => {
   console.log("Server is running on port 3000!!");
 });
-// middleware to log the cookies
-// app.use((req, res, next) => {
-//   console.log("Cookies: ", req.headers.cookie);
-//   next();
-// });
-// app.use((req, res, next) => {
-//   console.log('Incoming Headers:', req.headers);
-//   next();
-// });
+
 // create a route
-app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/users", userRouter);
 app.use("/api/post", postRouter);
 app.use("/api/comment", commentRouter);
 
 // global error handler middleware
 
 app.use((err, req, res, next) => {
-  const statusCode = res.statusCode || 500;
+  const statusCode = err.statusCode || 500;
   const message = err.message || "Internal server error";
   res.status(statusCode).json({
     success: false,
