@@ -100,7 +100,7 @@ export const signin = async (req, res, next) => {
       { id: validUser._id, isAdmin: validUser.isAdmin },
       process.env.JWT_SECRET,
       {
-        expiresIn: "25m",
+        expiresIn: "5h",
       }
     );
     res
@@ -217,7 +217,8 @@ export const resetPassword = async (req, res, next) => {
     });
     console.log(user);
     if (!user) return next(errorHandler(404, "No user is found."));
-    user.password = req.body.password;
+    const hashedPassword = bcryptjs.hashSync(req.body.password, 10);
+    user.password = hashedPassword;
     user.passwordResetToken = undefined;
     user.passwordResetTokenExpire = undefined;
     await user.save();
