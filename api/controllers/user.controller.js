@@ -1,8 +1,7 @@
 import bcryptjs from "bcryptjs";
 import User from "../models/user.model.js";
 import { errorHandler } from "../util/error.js";
-
-
+import { sendMail } from "../util/sendMail.js";
 
 function checkPassword(str) {
   var re = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
@@ -75,7 +74,6 @@ export const updateUser = async (req, res, next) => {
 // // delete user controller
 
 export const deleteUser = async (req, res, next) => {
-
   const userIdToDelete = req.params.userId;
   const requestingUserId = req.user.id;
   const isAdmin = req.user.isAdmin;
@@ -88,29 +86,26 @@ export const deleteUser = async (req, res, next) => {
 
     if (isAdmin) {
       if (requestingUserId.toString() === userIdToDelete.toString()) {
-        return next(
-          errorHandler(403, "Admins cannot delete themselves")
-        );
+        return next(errorHandler(403, "Admins cannot delete themselves"));
       }
     } else {
       if (requestingUserId.toString() !== userIdToDelete.toString()) {
         // Non-admin trying to delete someone else
-        return next(
-          errorHandler(403, "You can only delete your own account")
-        );
+        return next(errorHandler(403, "You can only delete your own account"));
       }
     }
 
     //delete the user
     console.log(userToDelete);
-    userToDelete.name="[Deleted]";
+    userToDelete.name = "[Deleted]";
     userToDelete.email = null; // Optional: Anonymize email
-    userToDelete.password=null;
-    userToDelete.profilePicture="https://i.pinimg.com/736x/b2/36/f4/b236f4e7dc2d7ef2f5c8b6c3f910881c.jpg";
-    userToDelete.isAdmin=false;
-    userToDelete.isDeleted=true;
-    userToDelete.isVerified=false;
-    await userToDelete.save({validateBeforeSave:false});
+    userToDelete.password = null;
+    userToDelete.profilePicture =
+      "https://i.pinimg.com/736x/b2/36/f4/b236f4e7dc2d7ef2f5c8b6c3f910881c.jpg";
+    userToDelete.isAdmin = false;
+    userToDelete.isDeleted = true;
+    userToDelete.isVerified = false;
+    await userToDelete.save({ validateBeforeSave: false });
     // await User.findByIdAndDelete(userIdToDelete);
     res.status(200).json({ message: "User has been deleted" });
   } catch (err) {
@@ -183,6 +178,73 @@ export const getUser = async (req, res, next) => {
     const { password, ...rest } = user._doc;
     res.status(200).json(rest);
   } catch (err) {
+    next(err);
+  }
+};
+
+// post feedback
+
+export const postFeedback = async (req, res, next) => {
+  try {
+    console.log("This is postFeedback controller");
+    console.log(req.body);
+
+    const feedbackData = req.body;
+
+    // Construct the HTML content for the email
+    const feedbackEmail = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: auto; background-color: #f4f4f4; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+        <div style="background-color: #007bff; color: white; text-align: center; padding: 10px 0; border-radius: 10px 10px 0 0;">
+          <h2>New Feedback Submitted on CodeCampus</h2>
+        </div>
+        <div style="padding: 20px;">
+          <p><strong>User Information:</strong></p>
+          <p>
+            <strong>Name:</strong> ${feedbackData.user.name}<br>
+            <strong>Email:</strong> <a href="mailto:${
+              feedbackData.user.email
+            }">${feedbackData.user.email}</a><br>
+            <strong>Profile Picture:</strong> <a href="${
+              feedbackData.user.profilePicture
+            }">View Profile Picture</a><br>
+            <strong>Account Created At:</strong> ${new Date(
+              feedbackData.user.createdAt
+            ).toLocaleString()}<br>
+            <strong>Last Updated:</strong> ${new Date(
+              feedbackData.user.updatedAt
+            ).toLocaleString()}
+          </p>
+          <hr>
+          <p><strong>Feedback Details:</strong></p>
+          <p>
+            <strong>Overall Rating:</strong> ${feedbackData.rating}/5<br>
+            <strong>Content Quality Rating:</strong> ${
+              feedbackData.contentRating
+            }/5<br>
+            <strong>Feedback:</strong> ${feedbackData.feedback}<br>
+            <strong>Suggestions for Improvement:</strong> ${
+              feedbackData.suggestions
+            }
+          </p>
+        </div>
+        <div style="text-align: center; margin-top: 20px; font-size: 0.9em; color: #777;">
+          Please review this feedback and take any necessary actions to enhance the platform experience.<br><br>
+          Thank you, <br>
+          <strong>CodeCampus Feedback System</strong>
+        </div>
+      </div>
+    `;
+
+    // Send the feedback email to the admin
+    await sendMail(feedbackData.user.email, "feedback", feedbackEmail, true);
+
+    // Respond to the user
+    res.status(200).json({
+      status: "success",
+      message: "Thanks for your feedback!",
+    });
+  } catch (err) {
+    console.error(err);
     next(err);
   }
 };

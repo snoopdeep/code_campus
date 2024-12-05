@@ -50,7 +50,7 @@ export default function Header() {
     }
   };
   const handleSubmit = (e) => {
-    console.log("hii",e);
+    console.log("hii", e);
     e.preventDefault();
     const urlParams = new URLSearchParams(location.search);
     urlParams.set("searchTerm", searchTerm);
@@ -134,9 +134,14 @@ export default function Header() {
         <Navbar.Link active={path === "/about"} as={"div"}>
           <Link to={"/about"}>About</Link>
         </Navbar.Link>
-        <Navbar.Link active={path === "/projects"} as={"div"}>
-          <Link to={"/projects"}>Projects</Link>
-        </Navbar.Link>
+        {currentUser ?
+          (<Navbar.Link active={path === "/feedback"} as={"div"}>
+            <Link to={"/feedback"}>Feedback</Link>
+          </Navbar.Link>):(
+            <Navbar.Link active={path === "/sing-in"} as={"div"}>
+              <Link to={"/sign-in"}>Feedback</Link>
+            </Navbar.Link>
+          )}
       </Navbar.Collapse>
     </Navbar>
   );

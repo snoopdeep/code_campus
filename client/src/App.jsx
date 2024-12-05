@@ -18,6 +18,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import Search from "./pages/Search.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
+import Feedback from "./pages/Feedback.jsx";
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
         {/* <Route element={<PrivateAdminRoute />}> */}
           <Route path="/create-post" element={<CreatePost />}></Route>
           <Route path="/update-post/:postId" element={<UpdatePost />}></Route>
+          <Route path="/feedback" element={<Feedback/>}></Route>
         {/* </Route> */}
 
         <Route path="/sign-in" element={<SignIn />}></Route>

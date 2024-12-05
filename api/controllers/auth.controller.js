@@ -3,7 +3,6 @@ import bcryptjs from "bcryptjs";
 import { errorHandler } from "../util/error.js";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
 import { sendMail } from "../util/sendMail.js";
 
 const generateOTP = () => {
@@ -15,7 +14,7 @@ function checkPassword(str) {
   return re.test(str);
 }
 
-const createAndSentJWTToken = async () => {};
+// const createAndSentJWTToken = async () => {};
 
 //1: signup
 export const signup = async (req, res, next) => {
@@ -101,7 +100,7 @@ export const signin = async (req, res, next) => {
       { id: validUser._id, isAdmin: validUser.isAdmin },
       process.env.JWT_SECRET,
       {
-        expiresIn:  "5m",
+        expiresIn: "25m",
       }
     );
     res
@@ -177,7 +176,7 @@ export const forgetPassword = async (req, res, next) => {
     await user.save({ validateBeforeSave: false });
 
     const urlString = `http://localhost:5173/reset-password/${resetToken}`;
-    await sendMail(userEmail, "passwordReset", urlString);
+    await sendMail(userEmail, "password_reset", urlString);
     res.status(200).json({
       status: "success",
       url: urlString,
