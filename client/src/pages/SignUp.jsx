@@ -325,6 +325,12 @@ export default function SignUp() {
               Sign In
             </Link>
           </div>
+          <div className="flex gap-2 text-sm mt-5">
+            <span> Forgot Password:</span>
+            <Link to={"/forgot-password"} className="text-blue-500">
+              Reset Password
+            </Link>
+          </div>
 
           {/* Display Error Message */}
           {errorMessage && (

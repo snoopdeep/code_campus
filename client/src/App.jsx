@@ -16,6 +16,8 @@ import UpdatePost from "./pages/UpdatePost.jsx";
 import PostPage from "./pages/PostPage";
 import ScrollToTop from "./components/ScrollToTop";
 import Search from "./pages/Search.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
 
 export default function App() {
   return (
@@ -37,6 +39,8 @@ export default function App() {
 
         <Route path="/sign-in" element={<SignIn />}></Route>
         <Route path="/sign-up" element={<SignUp />}></Route>
+        <Route path="/forgot-password" element={<ForgotPassword />}></Route>
+        <Route path="/reset-password/:resetToken" element={<ResetPassword/>}></Route>
         <Route path="/search" element={<Search />} />
         <Route path="/projects" element={<Project />}></Route>
         <Route path="/post/:postSlug" element={<PostPage />}></Route>

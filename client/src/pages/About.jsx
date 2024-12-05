@@ -8,10 +8,11 @@ export default function About() {
           </h1>
           <div className="text-md text-gray-500 flex flex-col gap-6">
             <p>
-              Welcome to CodeCampus! This platform was created to help college
-              students share their interview experiences and learn from each
-              other. We believe that real-world experiences can provide valuable
-              insights for those preparing for their interviews.
+              CodeCampus is a platform designed to help students at Ramaiah
+              Institute of Technology prepare for their future careers by
+              sharing valuable interview experiences. Whether you're a senior
+              reflecting on your journey or a junior seeking guidance, CodeCampus
+              is here to support you every step of the way. 
             </p>
 
             <p>

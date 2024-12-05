@@ -24,9 +24,10 @@ export default function Home() {
           Welcome to CodeCampus
         </h1>
         <p className="text-gray-500 text-xs sm:text-sm">
-          Hi, everyone! Welcome to my first blog post! My name is Alina Jiang
-          and I am the current Grad student of NYU. I came from China and have
-          been studying in America for 5 years.
+          A platform where students our college share their interview
+          experiences, tips, and insights to help each other succeed. <br/> Whether
+          you're preparing for your first job or advancing your career,
+          CodeCampus is here to guide you every step of the way.
         </p>
         <Link
           to={"/search"}

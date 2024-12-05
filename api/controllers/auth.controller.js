@@ -10,30 +10,14 @@ const generateOTP = () => {
   return crypto.randomInt(100000, 999999).toString();
 };
 
-const sendOTPEmail = async (email, otp) => {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER, // Your Gmail address
-      pass: process.env.EMAIL_PASS, // Your Gmail password or App Password
-    },
-  });
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: "Your OTP for Signup Verification",
-    text: `Your OTP is: ${otp}`,
-  };
-
-  await transporter.sendMail(mailOptions);
-};
-
 function checkPassword(str) {
   var re = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
   return re.test(str);
 }
 
+const createAndSentJWTToken = async () => {};
+
+//1: signup
 export const signup = async (req, res, next) => {
   console.log("Hello from signup controller ", " Request body:", req.body);
   const { name, email, password } = req.body;
@@ -75,7 +59,8 @@ export const signup = async (req, res, next) => {
       otpExpiry: Date.now() + 10 * 60 * 1000, // OTP valid for 10 minutes
     });
     console.log("New User successfully created in database!");
-    await sendOTPEmail(email, otp);
+    // await sendOTPEmail(email, otp);
+    await sendMail(email, "otp", otp);
     // Do not send the OTP back to the client for security reasons
     return res.status(201).json({
       message: "User created successfully. OTP sent to email.",
@@ -91,6 +76,7 @@ export const signup = async (req, res, next) => {
   }
 };
 
+// 2: signin
 export const signin = async (req, res, next) => {
   console.log("Hello from signin controller ", " Request body:", req.body);
   try {
@@ -115,7 +101,7 @@ export const signin = async (req, res, next) => {
       { id: validUser._id, isAdmin: validUser.isAdmin },
       process.env.JWT_SECRET,
       {
-        expiresIn: 1000 * 60 * 5,
+        expiresIn:  "5m",
       }
     );
     res
@@ -208,6 +194,7 @@ export const resetPassword = async (req, res, next) => {
   console.log("hi from reset password");
   try {
     const resetToken = req.params.resetToken;
+    console.log(resetToken);
     // Password validation
     if (!req.body.password)
       return next(errorHandler(404, "password is required"));
@@ -223,19 +210,30 @@ export const resetPassword = async (req, res, next) => {
       .createHash("sha256")
       .update(resetToken)
       .digest("hex");
+    console.log(hashedResetToken);
 
     const user = await User.findOne({
       passwordResetToken: hashedResetToken,
       passwordResetTokenExpire: { $gt: Date.now() },
     });
+    console.log(user);
     if (!user) return next(errorHandler(404, "No user is found."));
     user.password = req.body.password;
     user.passwordResetToken = undefined;
     user.passwordResetTokenExpire = undefined;
     await user.save();
-    res.status(202).json({
+    console.log("jwt secreate", process.env.JWT_SECRET);
+    const token = jwt.sign(
+      { id: user._id, isAdmin: user.isAdmin },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "5m",
+      }
+    );
+    console.log("token", token);
+    res.status(200).cookie("access_token", token, { httpOnly: true }).json({
       status: "success",
-      message: "password reset successfully",
+      data: user,
     });
   } catch (err) {
     console.log(err);
