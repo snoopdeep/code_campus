@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import crypto from "crypto";
 
 // User schema definition
 const userSchema = new mongoose.Schema(
@@ -26,9 +27,9 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    isDeleted:{
-      type:Boolean,
-      default:false,
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
     // OTP related fields
     otp: {
@@ -41,11 +42,23 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false, // Flag to mark if the user is verified via OTP
     },
+    passwordResetToken: String,
+    passwordResetTokenExpire: Date,
   },
   {
     timestamps: true, // To track creation and modification times
   }
 );
+
+userSchema.methods.createResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  this.passwordResetTokenExpire=Date.now()+5*60*1000;
+  return resetToken;  
+};
 
 const User = mongoose.model("User", userSchema);
 

@@ -4,6 +4,7 @@ import { errorHandler } from "../util/error.js";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import { sendMail } from "../util/sendMail.js";
 
 const generateOTP = () => {
   return crypto.randomInt(100000, 999999).toString();
@@ -170,6 +171,74 @@ export const google = async (req, res, next) => {
         .json(newUser);
     }
   } catch (err) {
+    next(err);
+  }
+};
+
+// forget password
+export const forgetPassword = async (req, res, next) => {
+  console.log("hi from the forget password");
+  try {
+    const userEmail = req.body.email;
+    console.log(userEmail);
+    if (!userEmail) return next(errorHandler(404, "No email is provided"));
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+      return next(errorHandler(400, "No user is found."));
+    }
+    const resetToken = user.createResetToken();
+
+    await user.save({ validateBeforeSave: false });
+
+    const urlString = `http://localhost:5173/reset-password/${resetToken}`;
+    await sendMail(userEmail, "passwordReset", urlString);
+    res.status(200).json({
+      status: "success",
+      url: urlString,
+      message: "password change link send successfully",
+    });
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
+};
+
+// reset password
+export const resetPassword = async (req, res, next) => {
+  console.log("hi from reset password");
+  try {
+    const resetToken = req.params.resetToken;
+    // Password validation
+    if (!req.body.password)
+      return next(errorHandler(404, "password is required"));
+    if (!checkPassword(req.body.password)) {
+      return next(
+        errorHandler(
+          400,
+          "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character."
+        )
+      );
+    }
+    const hashedResetToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    const user = await User.findOne({
+      passwordResetToken: hashedResetToken,
+      passwordResetTokenExpire: { $gt: Date.now() },
+    });
+    if (!user) return next(errorHandler(404, "No user is found."));
+    user.password = req.body.password;
+    user.passwordResetToken = undefined;
+    user.passwordResetTokenExpire = undefined;
+    await user.save();
+    res.status(202).json({
+      status: "success",
+      message: "password reset successfully",
+    });
+  } catch (err) {
+    console.log(err);
     next(err);
   }
 };

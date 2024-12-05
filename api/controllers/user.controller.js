@@ -103,11 +103,14 @@ export const deleteUser = async (req, res, next) => {
 
     //delete the user
     console.log(userToDelete);
-    userToDelete.isDeleted=true;
     userToDelete.name="[Deleted]";
+    userToDelete.email = null; // Optional: Anonymize email
+    userToDelete.password=null;
     userToDelete.profilePicture="https://i.pinimg.com/736x/b2/36/f4/b236f4e7dc2d7ef2f5c8b6c3f910881c.jpg";
-    // user.email = null; // Optional: Anonymize email
-    await userToDelete.save();
+    userToDelete.isAdmin=false;
+    userToDelete.isDeleted=true;
+    userToDelete.isVerified=false;
+    await userToDelete.save({validateBeforeSave:false});
     // await User.findByIdAndDelete(userIdToDelete);
     res.status(200).json({ message: "User has been deleted" });
   } catch (err) {

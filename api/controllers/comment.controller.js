@@ -88,13 +88,16 @@ export const editComment = async (req, res, next) => {
 
 // delete comment // only admin or the owner of the comment is allowed
 export const deleteComment = async (req, res, next) => {
+  console.log('this is deleteComment middleware.. ');
   try {
     const commentId = req.params.commentId;
     const comment = await Comment.findById(commentId);
+    console.log(comment);
     if (!comment) {
       return next(errorHandler(404, "Comment not found"));
     }
-    if (comment.userId !== req.user.id || !req.user.isAdmin) {
+    console.log(req.user);
+    if (comment.userId !== req.user.id && !req.user.isAdmin) {
       return next(
         errorHandler(404, "you are not allow to delete this comment")
       );
