@@ -27,6 +27,8 @@ export const sendMail = async (
     case "password_reset":
       subject = "Password Reset Link";
       break;
+    case "paymentSuccess":
+      subject="Thank You for Your Donation!"  
     default:
       subject = "Notification from CodeCampus";
   }
@@ -40,14 +42,13 @@ export const sendMail = async (
   if (messageType === "otp" || messageType === "password_reset") {
     mailOptions.text =
       messageType === "otp" ? `Your OTP is: ${message}` : `${message}`;
-  } else if (messageType === "feedback") {
+  } else if (messageType === "feedback"||messageType==="paymentSuccess") {
     mailOptions.html = message; // Use HTML content for feedback
   } else {
     mailOptions.text = message; // Default to plain text
   }
 
   // Send the email
-  // console.log(`Sending email from: ${mailOptions.from} to: ${mailOptions.to}`);
-
+  console.log(`Sending email from: ${mailOptions.from} to: ${mailOptions.to}`);
   await transporter.sendMail(mailOptions);
 };

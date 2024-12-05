@@ -250,10 +250,9 @@ export const postFeedback = async (req, res, next) => {
   }
 };
 
-
 // create order
 export const createOrder = async (req, res, next) => {
-  console.log(process.env.RAZORPAY_KEY_ID);
+  // console.log(process.env.RAZORPAY_KEY_ID);
   // Razorpay instance
   const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -262,18 +261,18 @@ export const createOrder = async (req, res, next) => {
   console.log("this is createOrder middleware");
   try {
     const { amount } = req.body;
-    console.log(amount);
+    // console.log(amount);
 
     if (!amount || amount <= 0) {
       return res.status(400).json({ error: "Invalid donation amount" });
     }
     // Create an order with the user-defined amount
     const order = await razorpay.orders.create({
-      amount: amount, // Amount in paise (received from frontend)
+      amount: amount,
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
     });
-    console.log("order is ::", order);
+    // console.log("this is createOrder and order is :", order);
 
     res.json({
       amount: order.amount,
@@ -282,5 +281,49 @@ export const createOrder = async (req, res, next) => {
   } catch (err) {
     console.error("Error creating order", err);
     res.status(500).send("Something went wrong");
+  }
+};
+
+// payment success
+export const paymentSuccess = async (req, res, next) => {
+  console.log("this is paymentSuccess middleware");
+  const { payment_id, order_id, email, amount } = req.body;
+  try {
+    // Fetch payment details from Razorpay (optional but recommended)
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+    console.log('this is paymentSuccess::',payment_id,order_id,email,amount);
+    const paymentDetails = await razorpay.payments.fetch(payment_id);
+
+    // Define the HTML content
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; color: #444;">
+        <h2 style="color: #1a73e8;">Thank You for Your Donation!</h2>
+        <p>Dear Donor,</p>
+        <p>We sincerely appreciate your generous contribution to <strong>CodeCampus</strong>. Your support helps us continue our mission.</p>
+        
+        <h3>Donation Details:</h3>
+        <ul>
+          <li><strong>Amount:</strong> INR ${amount}</li>
+          <li><strong>Payment ID:</strong> ${payment_id}</li>
+          <li><strong>Order ID:</strong> ${order_id}</li>
+          <li><strong>Date:</strong> ${new Date().toLocaleDateString()}</li>
+        </ul>
+
+        <p>Thank you again for your support!</p>
+        <p>Warm regards,<br/><strong>The CodeCampus Team</strong></p>
+      </div>
+    `;
+    await sendMail(email,"paymentSuccess",htmlContent);
+    // Respond to the user
+    res.status(200).json({
+      status: "success",
+      message: "Thanks for your donation!",
+    });
+  } catch (err) {
+    console.log(err);
+    next(err);
   }
 };

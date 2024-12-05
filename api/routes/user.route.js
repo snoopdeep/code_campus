@@ -8,6 +8,7 @@ import {
   getUser,
   postFeedback,
   createOrder,
+  paymentSuccess
 } from "../controllers/user.controller.js";
 import { verifyToken } from "../util/verifyUser.js";
 console.log("Hello from user route!!");
@@ -19,5 +20,6 @@ router.post("/signout", signout);
 router.get("/:userId", getUser);
 router.post("/feedback", verifyToken, postFeedback);
 router.post("/create-order", verifyToken, createOrder);
+router.post('/payment-success',verifyToken,paymentSuccess);
 
 export default router;
