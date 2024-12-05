@@ -2,6 +2,7 @@ import bcryptjs from "bcryptjs";
 import User from "../models/user.model.js";
 import { errorHandler } from "../util/error.js";
 import { sendMail } from "../util/sendMail.js";
+import Razorpay from "razorpay";
 
 function checkPassword(str) {
   var re = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
@@ -246,5 +247,40 @@ export const postFeedback = async (req, res, next) => {
   } catch (err) {
     console.error(err);
     next(err);
+  }
+};
+
+
+// create order
+export const createOrder = async (req, res, next) => {
+  console.log(process.env.RAZORPAY_KEY_ID);
+  // Razorpay instance
+  const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+  console.log("this is createOrder middleware");
+  try {
+    const { amount } = req.body;
+    console.log(amount);
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ error: "Invalid donation amount" });
+    }
+    // Create an order with the user-defined amount
+    const order = await razorpay.orders.create({
+      amount: amount, // Amount in paise (received from frontend)
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`,
+    });
+    console.log("order is ::", order);
+
+    res.json({
+      amount: order.amount,
+      order_id: order.id,
+    });
+  } catch (err) {
+    console.error("Error creating order", err);
+    res.status(500).send("Something went wrong");
   }
 };

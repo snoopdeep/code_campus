@@ -33,7 +33,7 @@ app.use(
 // import routes
 // conntect to mongodb
 // Check if the environment variable is loaded
-// console.log("MONGO_URL:",process.env.MONGO_URL);
+// console.log("MONGO_URL:", process.env.MONGO_URL);
 mongoose
   .connect(process.env.MONGO_URL)
   .then(() => {
