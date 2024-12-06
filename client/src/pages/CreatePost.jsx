@@ -1,5 +1,13 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { Button, TextInput, Select, FileInput, Alert } from "flowbite-react";
+import {
+  Button,
+  TextInput,
+  Select,
+  FileInput,
+  Alert,
+  Modal,
+} from "flowbite-react";
+import { HiOutlineExclamationCircle } from "react-icons/hi";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import {
@@ -24,6 +32,7 @@ export default function CreatePost() {
   const [file, setFile] = useState(null);
   const [imageUploadProgress, setImageUploadProgress] = useState(null);
   const [imageUploadError, setImageUploadError] = useState(null);
+  const [showModel, setShowModel] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     category: "uncategorized",
@@ -199,7 +208,7 @@ export default function CreatePost() {
         body: JSON.stringify(formData),
       });
       const data = await res.json();
-      console.log("this is create post.jsx and data is ",data);
+      console.log("this is create post.jsx and data is ", data);
       if (!res.ok) {
         setPublishError(data.message);
         return;
@@ -207,10 +216,12 @@ export default function CreatePost() {
       if (res.ok) {
         setPublishError(null);
         setPublishSuccess("Post Created Successfully");
+        setShowModel(true);
         // Navigate after success
         setTimeout(() => {
-          navigate(`/post/${data.slug}`);
-        }, 1500);
+          setShowModel(false);
+          navigate("/");
+        }, 8000);
       }
     } catch (error) {
       setPublishError("Something went wrong");
@@ -308,6 +319,29 @@ export default function CreatePost() {
         {publishError && <Alert color="failure">{publishError}</Alert>}
         {publishSuccess && <Alert color="success">{publishSuccess}</Alert>}
       </form>
+      <Modal
+        show={showModel}
+        onClose={() => setShowModel(false)}
+        popup
+        size={"md"}
+      >
+        <Modal.Header />
+        <Modal.Body>
+          <div className="text-center">
+            <HiOutlineExclamationCircle className="h-14 w-14 text-green-400 dark:text-green-200 mb-4 mx-auto" />
+            <h3 className="mb-5 text-lg text-gray-700 dark:text-gray-300">
+              Congratulations!
+            </h3>
+            <p className="mb-5 text-md text-gray-500 dark:text-gray-400">
+              Thank you for your valuable contribution. Your post has been
+              submitted and is awaiting admin approval.
+            </p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
+              You will be redirected to the homepage shortly.
+            </p>
+          </div>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 }

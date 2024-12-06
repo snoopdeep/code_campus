@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableRow } from "flowbite-react";
 import { Link } from "react-router-dom";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 import { Button, Modal } from "flowbite-react";
+import { FaCheck } from "react-icons/fa";
 
 export default function DashPosts() {
   const [userPosts, setUserPosts] = useState([]);
@@ -11,12 +12,14 @@ export default function DashPosts() {
   const [showMore, setShowMore] = useState(true);
   const [showModel, setShowModel] = useState(false);
   const [postId, setPostId] = useState(null);
+  const [verifySuccess, setVerifySuccess] = useState(null);
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const res = await fetch(
-          `http://localhost:3000/api/post/getposts?${currentUser._id}`,{
+          `http://localhost:3000/api/post/getposts?${currentUser._id}`,
+          {
             method: "GET",
             credentials: "include",
           }
@@ -37,13 +40,14 @@ export default function DashPosts() {
       fetchPosts();
     }
   }, [currentUser]);
-  console.log(userPosts);
+  console.log("This is DashPost.jsx and post is :: ", userPosts,'current user is :',currentUser);
   // handleShowMore function
   const handleShowMore = async () => {
     const startIndex = userPosts.length;
     try {
       const res = await fetch(
-        `http://localhost:3000/api/post/getposts?${currentUser._id}&startIndex=${startIndex}`,{
+        `http://localhost:3000/api/post/getposts?${currentUser._id}&startIndex=${startIndex}`,
+        {
           credentials: "include",
           method: "GET",
         }
@@ -63,7 +67,7 @@ export default function DashPosts() {
   // handleDeletePost function
   const handleDeletePost = async () => {
     setShowModel(false);
-    console.log('hid from handleDeletePost', postId,currentUser);
+    console.log("hid from handleDeletePost", postId, currentUser);
     try {
       const res = await fetch(
         `http://localhost:3000/api/post/deletepost/${postId}/${currentUser._id}`,
@@ -73,13 +77,41 @@ export default function DashPosts() {
         }
       );
       const data = await res.json();
-      if(!res.ok){
-             console.log(data.message);
-      }else{
+      if (!res.ok) {
+        console.log(data.message);
+      } else {
         // delete the post from the userPosts state
         setUserPosts((prev) => prev.filter((post) => post._id !== postId));
       }
     } catch (err) {}
+  };
+
+  const handleVerifyPost = async (postId) => {
+    console.log("this is handleVerifyPost and postId is :", postId);
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/post/verifyPost/${postId}`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+      if (res.ok) {
+        setUserPosts((prev) =>
+          prev.map((post) =>
+            post._id === postId ? { ...post, isVerified: true } : post
+          )
+        );
+        console.log("post is verified");
+        return;
+      } else {
+        console.log("error while verify the post");
+        return;
+      }
+    } catch (err) {
+      console.log(err);
+      return;
+    }
   };
   return (
     <div
@@ -93,7 +125,13 @@ export default function DashPosts() {
               <Table.HeadCell>Date updated</Table.HeadCell>
               <Table.HeadCell>Post image</Table.HeadCell>
               <Table.HeadCell>Post title</Table.HeadCell>
-              <Table.HeadCell>Category</Table.HeadCell>
+              {/* <Table.HeadCell>Category</Table.HeadCell> */}
+              <Table.HeadCell>Verified</Table.HeadCell>
+              {currentUser.isAdmin ? (
+                <Table.HeadCell>Verify Now</Table.HeadCell>
+              ) : (
+                ""
+              )}
               <Table.HeadCell>Delete</Table.HeadCell>
               <Table.HeadCell>
                 <span>Edit</span>
@@ -125,7 +163,26 @@ export default function DashPosts() {
                       {post.title}
                     </Link>
                   </TableCell>
-                  <TableCell>{post.category}</TableCell>
+                  {/* <TableCell>{post.category}</TableCell> */}
+                  <TableCell>
+                    {post.isVerified ? "verified" : "not verified"}
+                  </TableCell>
+                  {currentUser.isAdmin ? (
+                    <TableCell>
+                      {post.isVerified ? (
+                        <FaCheck className="text-green-700" />
+                      ) : (
+                        <button
+                          onClick={() => handleVerifyPost(post._id)}
+                          className="flex items-center justify-center p-1 rounded-full hover:bg-red-200"
+                        >
+                          <FaCheck className="text-red-700" />
+                        </button>
+                      )}
+                    </TableCell>
+                  ) : (
+                    ""
+                  )}
                   <TableCell>
                     <span
                       onClick={() => {

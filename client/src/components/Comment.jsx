@@ -20,8 +20,9 @@ export default function Comment({ comment, onLike,onEdit,onDelete }) {
           }
         );
         const data = await res.json();
+        // console.log('data is ',data);
         if (res.ok) {
-          setUser(data);
+          setUser(data.data);
         }
       } catch (err) {
         console.error(err);

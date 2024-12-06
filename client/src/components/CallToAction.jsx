@@ -1,9 +1,12 @@
 import { Button, TextInput } from "flowbite-react";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 
 export default function CallToAction() {
   const [loading, setLoading] = useState(false);
   const [amount, setAmount] = useState("");
+  const { currentUser } = useSelector((state) => state.user);
+  console.log("current user is ::", currentUser);
 
   const handleDonate = async () => {
     if (!amount || isNaN(amount) || amount <= 0) {
@@ -14,33 +17,55 @@ export default function CallToAction() {
     setLoading(true);
     try {
       // Make an API request to create an order on the server
-      const response = await fetch("http://localhost:3000/api/users/create-order", {
-        method: "POST",
-        credentials:"include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ amount: Number(amount) * 100 }), // Convert INR to paise
-      });
-      console.log('this is calltoAction ',response);
+      const response = await fetch(
+        "http://localhost:3000/api/users/create-order",
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ amount: Number(amount) * 100 }), // Convert INR to paise
+        }
+      );
 
       const data = await response.json();
-      console.log('data is ::',data);
       // Razorpay options
       const options = {
         key: import.meta.env.VITE_RAZORPAY_API_KEY, // Replace with your Razorpay key
-        amount: data.amount, // Amount in paise
+        amount: data.amount,
         currency: "INR",
         order_id: data.order_id,
         name: "CodeCampus Donation",
         description: "Support CodeCampus and help us grow!",
-        handler: function (response) {
+        handler: async function (response) {
           console.log("Payment successful", response);
           // Handle payment success, maybe notify the user or update the database
+          const res = await fetch(
+            "http://localhost:3000/api/users/payment-success",
+            {
+              method: "POST",
+              credentials: "include",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                payment_id: response.razorpay_payment_id,
+                order_id: response.razorpay_order_id,
+                email: currentUser.email,
+                amount: data.amount,
+              }),
+            }
+          );
+          if (res.status !== 200) {
+            alert("something went wrong!");
+          } else {
+            console.log("mail send successfully and payment done!");
+          }
         },
         prefill: {
-          name: "Donor Name",
-          email: "donor@example.com",
+          name: currentUser.name,
+          email: currentUser.email,
         },
       };
 
@@ -67,7 +92,12 @@ export default function CallToAction() {
           type="number"
           placeholder="Enter donation amount"
           value={amount}
-          onChange={(e) => setAmount(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value >= 0 || value === "") {
+              setAmount(value);
+            }
+          }}
           className="mb-4"
         />
         <Button

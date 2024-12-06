@@ -56,9 +56,9 @@ userSchema.methods.createResetToken = function () {
     .createHash("sha256")
     .update(resetToken)
     .digest("hex");
-  this.passwordResetTokenExpire=Date.now()+5*60*1000;
-  console.log('this is createResetToken instance method.. ');
-  return resetToken;  
+  this.passwordResetTokenExpire = Date.now() + 5 * 60 * 1000;
+  console.log("this is createResetToken instance method.. ");
+  return resetToken;
 };
 
 const User = mongoose.model("User", userSchema);

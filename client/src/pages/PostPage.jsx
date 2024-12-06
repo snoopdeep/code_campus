@@ -16,7 +16,7 @@ export default function PostPage() {
   const [error, setError] = useState(null);
   const [post, setPost] = useState(null);
   const [recentPosts, setRecentPosts] = useState(null);
-  console.log("post slug is ", postSlug);
+  // console.log("post slug is ", postSlug);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -29,9 +29,9 @@ export default function PostPage() {
             credentials: "include",
           }
         );
-        console.log(res);
+        // console.log(res);
         const data = await res.json();
-        console.log("this is PostPage.jsx and data is ", data);
+        // console.log("this is PostPage.jsx and data is ", data);
         if (!res.ok) {
           setError(true);
           setLoading(false);
@@ -51,7 +51,7 @@ export default function PostPage() {
     fetchPost();
   }, [postSlug]);
 
-  console.log("this is postPage.jsx and post is :", post);
+  // console.log("this is postPage.jsx and post is :", post);
 
   useEffect(() => {
     const getRecentPost = async () => {
@@ -73,7 +73,7 @@ export default function PostPage() {
     };
     getRecentPost();
   }, []);
-  console.log(recentPosts);
+  // console.log(recentPosts);
 
   // Highlight code blocks after content is loaded
   useEffect(() => {
@@ -121,7 +121,9 @@ export default function PostPage() {
         ALLOWED_ATTR: ["href", "src", "alt", "class"],
       })
     : "";
-
+    console.log('post is :',post);
+  // console.log("postUser is ", postUser);
+  // console.log(postUser.profilePicture);
   return (
     <main className="p-3 flex flex-col max-w-6xl mx-auto min-h-screen">
       <h1 className="text-3xl mt-10 p-3 text-center font-serif max-w-2xl mx-auto lg:text-4xl">
@@ -140,11 +142,32 @@ export default function PostPage() {
         alt={post && post.title}
         className="mt-10 p-3 max-h-[600px] w-full object-cover"
       />
-      <div className="flex justify-between p-3 border-b border-slate-500 mx-auto w-full max-w-2xl text-xs">
-        <span>{post && new Date(post.createdAt).toLocaleDateString()}</span>
-        <span className="italic">
-          {post && (post.content.length / 1000).toFixed(0)} mins read
-        </span>
+      <div className="flex items-center p-3 border-b border-slate-500 mx-auto w-full max-w-2xl text-xs">
+        {post?.userId && (
+          <img
+            className="w-9 h-9 rounded-full bg-gray-200 mr-3"
+            src={post.userId.profilePicture}
+            alt={post.userId.name}
+          />
+        )}
+        <div className="flex flex-col">
+          <span className="font-bold text-xs truncate">
+            {post?.userId ? `@${post.userId.name}` : `[Deleted]`}
+          </span>
+          <div className="flex space-x-2 text-gray-600 text-xs mt-1">
+            <span>
+              {post &&
+                new Date(post.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "2-digit",
+                })}
+            </span>
+            <span className="italic">
+              {post && (post.content.length / 1000).toFixed(0)} mins read
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Enhanced content rendering with custom styles */}

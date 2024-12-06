@@ -19,6 +19,8 @@ import Search from "./pages/Search.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import Feedback from "./pages/Feedback.jsx";
+import TermsAndConditons from "./pages/TermsAndConditons.jsx";
+import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
 
 export default function App() {
   return (
@@ -29,6 +31,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />}></Route>
         <Route path="/about" element={<About />}></Route>
+        <Route path="/terms-conditions" element={<TermsAndConditons/>}></Route>
+        <Route path="/privacy-policy" element={<PrivacyPolicy/>}></Route>
         {/* // protect the dashboard route using private route */}
         <Route element={<PrivateRoute />}>
           <Route path="/dashboard" element={<Dashboard />}></Route>

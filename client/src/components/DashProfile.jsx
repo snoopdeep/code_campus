@@ -57,12 +57,6 @@ export default function DashProfile() {
       setImgFileUrl(imgUrl);
     }
   };
-  // console.log(
-  //   "imageFile in browser:",
-  //   imageFile,
-  //   "imgUri in browser",
-  //   imgFileUrl
-  // );
   // if any new file is uplaoded then update uplaod that file to real storage
   useEffect(() => {
     if (imageFile) {

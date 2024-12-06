@@ -98,9 +98,9 @@ export const deleteUser = async (req, res, next) => {
 
     //delete the user
     console.log(userToDelete);
-    userToDelete.name = "[Deleted]";
-    userToDelete.email = null; // Optional: Anonymize email
-    userToDelete.password = null;
+    userToDelete.name = `[Deleted]_${userToDelete._id}`;
+    userToDelete.email = `deleted_${userToDelete._id}@example.com`;
+    userToDelete.password = `deleted_${userToDelete._id}`;
     userToDelete.profilePicture =
       "https://i.pinimg.com/736x/b2/36/f4/b236f4e7dc2d7ef2f5c8b6c3f910881c.jpg";
     userToDelete.isAdmin = false;
@@ -171,13 +171,18 @@ export const getUsers = async (req, res, next) => {
 // get user controller
 export const getUser = async (req, res, next) => {
   try {
-    console.log("hi from get user controller");
+    console.log("hi from get user controller", req.params);
     const user = await User.findById(req.params.userId);
+    console.log(user);
     if (!user) {
       return next(errorHandler(404, "User not found"));
     }
     const { password, ...rest } = user._doc;
-    res.status(200).json(rest);
+    console.log(password, rest);
+    res.status(200).json({
+      status: "success",
+      data: rest,
+    });
   } catch (err) {
     next(err);
   }
@@ -294,7 +299,13 @@ export const paymentSuccess = async (req, res, next) => {
       key_id: process.env.RAZORPAY_KEY_ID,
       key_secret: process.env.RAZORPAY_KEY_SECRET,
     });
-    console.log('this is paymentSuccess::',payment_id,order_id,email,amount);
+    console.log(
+      "this is paymentSuccess::",
+      payment_id,
+      order_id,
+      email,
+      amount
+    );
     const paymentDetails = await razorpay.payments.fetch(payment_id);
 
     // Define the HTML content
@@ -316,7 +327,7 @@ export const paymentSuccess = async (req, res, next) => {
         <p>Warm regards,<br/><strong>The CodeCampus Team</strong></p>
       </div>
     `;
-    await sendMail(email,"paymentSuccess",htmlContent);
+    await sendMail(email, "paymentSuccess", htmlContent);
     // Respond to the user
     res.status(200).json({
       status: "success",

@@ -64,12 +64,15 @@ export const likeComment = async (req, res, next) => {
 
 // edit comment
 export const editComment = async (req, res, next) => {
+  console.log('hi from editComment');
   try {
     const comment = await Comment.findById(req.params.commentId);
     if (!comment) {
       return next(errorHandler(404, "comment is not found"));
     }
-    if (comment.userId != req.user.id || !req.user.isAdmin) {
+    console.log('commentUserId',comment.userId,'userId',req.user.id,'isAdmin',req.user.isAdmin);
+    if (comment.userId !== req.user.id && !req.user.isAdmin) {
+      // console.log("hello, you are not allow to edit this comment");
       return next(errorHandler(404, "you are not allow to edit this comment"));
     }
     const editedComment = await Comment.findByIdAndUpdate(
