@@ -121,7 +121,7 @@ export default function PostPage() {
         ALLOWED_ATTR: ["href", "src", "alt", "class"],
       })
     : "";
-    console.log('post is :',post);
+  console.log("post is :", post);
   // console.log("postUser is ", postUser);
   // console.log(postUser.profilePicture);
   return (
@@ -151,7 +151,15 @@ export default function PostPage() {
           />
         )}
         <div className="flex flex-col">
-          <span className="font-bold text-xs truncate">
+          <span
+            className={
+              post?.userId?.isAdmin
+                ? "font-bold text-xs text-red-600 truncate"
+                : post?.userId?.isModerator
+                ? "font-bold text-xs text-violet-700 truncate"
+                : "font-bold text-xs truncate"
+            }
+          >
             {post?.userId ? `@${post.userId.name}` : `[Deleted]`}
           </span>
           <div className="flex space-x-2 text-gray-600 text-xs mt-1">

@@ -4,7 +4,7 @@ import { FaThumbsUp } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { Button, Textarea } from "flowbite-react";
 
-export default function Comment({ comment, onLike,onEdit,onDelete }) {
+export default function Comment({ comment, onLike, onEdit, onDelete }) {
   const [user, setUser] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(comment.content);
@@ -42,7 +42,7 @@ export default function Comment({ comment, onLike,onEdit,onDelete }) {
         `http://localhost:3000/api/comment/editComment/${comment._id}`,
         {
           method: "PUT",
-          credentials:"include",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -52,15 +52,15 @@ export default function Comment({ comment, onLike,onEdit,onDelete }) {
         }
       );
       console.log(response);
-      if(response.ok){
-        onEdit(comment._id,editedContent);
+      if (response.ok) {
+        onEdit(comment._id, editedContent);
         setIsEditing(false);
       }
     } catch (err) {
       console.log(err);
     }
   };
-  console.log('this is Comment.jsx and user is',user);
+  console.log("this is Comment.jsx and user is", user);
   return (
     <div className="flex p-4 border-b dark:border-gray-600 text-sm">
       <div className="flex-shrink-0 mr-3">
@@ -72,7 +72,15 @@ export default function Comment({ comment, onLike,onEdit,onDelete }) {
       </div>
       <div className="flex-1">
         <div className="flex items-center mb-1">
-          <span className="font-bold mr-1 text-xs truncate">
+          <span
+            className={
+              user.isAdmin
+                ? "font-bold mr-1 text-xs text-red-600 truncate"
+                : user.isModerator
+                ? "font-bold mr-1 text-xs text-violet-700 truncate"
+                : "font-bold mr-1 text-xs truncate"
+            }
+          >
             {user ? `@${user.name}` : `anonymous user`}
           </span>
           <span className="text-gray-500 text-xs">
@@ -131,23 +139,22 @@ export default function Comment({ comment, onLike,onEdit,onDelete }) {
               {currentUser &&
                 (currentUser._id === comment.userId || currentUser.isAdmin) && (
                   <>
-                  <button
-                    type="button"
-                    className="text-gray-400 hover:text-blue-400"
-                    onClick={handleEdit}
-                  >
-                    Edit
-                  </button>
+                    <button
+                      type="button"
+                      className="text-gray-400 hover:text-blue-400"
+                      onClick={handleEdit}
+                    >
+                      Edit
+                    </button>
 
-                  <button
-                    type="button"
-                    className="text-red-400 hover:text-red-900"
-                    onClick={()=>onDelete(comment._id)}
-                  >
-                    Delete
-                  </button>
+                    <button
+                      type="button"
+                      className="text-red-400 hover:text-red-900"
+                      onClick={() => onDelete(comment._id)}
+                    >
+                      Delete
+                    </button>
                   </>
-                  
                 )}
             </div>
           </>

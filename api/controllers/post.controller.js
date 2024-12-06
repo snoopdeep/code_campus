@@ -58,13 +58,29 @@ export const getposts = async (req, res, next) => {
       ];
     }
     // console.log(req.query);
-    // console.log("filter is ", filter);
-    const posts = await Post.find(filter)
+    console.log("filter is ", filter);
+    const tempPosts = await Post.find(filter)
       .sort({ updatedAt: sortDirection })
       .skip(startIndex)
       .limit(limit)
-      .populate("userId", ["name", "profilePicture"]);
-    console.log(posts);
+      .populate("userId", [
+        "name",
+        "profilePicture",
+        "isAdmin",
+        "isDeleted",
+        "isModerator",
+      ]);
+    // console.log(tempPosts);
+
+    // if user is deleted then change the name of it
+    const posts = tempPosts.map((post) => {
+      // Check if the user exists and is marked as deleted
+      if (post.userId?.isDeleted) {
+        post.userId.name = `[Deleted]`;
+      }
+      return post;
+    });
+    // console.log(posts);
 
     const totalPosts = await Post.countDocuments(filter);
 
@@ -125,11 +141,20 @@ export const getAllPosts = async (req, res, next) => {
     filter.isVerified = true;
 
     // Fetch posts based on the filter, with sorting and pagination
-    const posts = await Post.find(filter)
+    const tempPosts = await Post.find(filter)
       .sort({ updatedAt: sortDirection })
       .skip(startIndex)
       .limit(limit)
-      .populate("userId", "name profilePicture");
+      .populate("userId", "name profilePicture isAdmin isDeleted isModerator");
+
+    // if user is deleted then change the name of it
+    const posts = tempPosts.map((post) => {
+      // Check if the user exists and is marked as deleted
+      if (post.userId?.isDeleted) {
+        post.userId.name = `[Deleted]`;
+      }
+      return post;
+    });
 
     // Count total number of posts matching the filter
     const totalPosts = await Post.countDocuments(filter);

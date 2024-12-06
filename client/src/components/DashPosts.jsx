@@ -24,6 +24,7 @@ export default function DashPosts() {
             credentials: "include",
           }
         );
+        console.log('this is dashpost and res is ',res);
         const data = await res.json();
         if (res.ok) {
           setUserPosts(data.posts);

@@ -171,14 +171,15 @@ export const getUsers = async (req, res, next) => {
 // get user controller
 export const getUser = async (req, res, next) => {
   try {
-    console.log("hi from get user controller", req.params);
+    console.log("hi from getuser controller", req.params);
     const user = await User.findById(req.params.userId);
-    console.log(user);
     if (!user) {
       return next(errorHandler(404, "User not found"));
     }
+    // change the name of deleted user
+    if (user?.isDeleted) user.name = "[Deleted]";
+    
     const { password, ...rest } = user._doc;
-    console.log(password, rest);
     res.status(200).json({
       status: "success",
       data: rest,

@@ -21,7 +21,17 @@ export default function PostCard({ post }) {
               alt="user profile"
               className="w-5 h-5 rounded-full object-cover border border-gray-700"
             />
-            <p className="text-sm font-medium">{post.userId.name}</p>
+            <p
+              className={
+                post?.userId?.isAdmin
+                  ? "text-sm font-medium text-red-600"
+                  : post?.userId?.isModerator
+                  ? "text-sm text-violet-600 font-medium"
+                  : "text-sm font-medium"
+              }
+            >
+              {post.userId.name}
+            </p>
           </div>
           <span className="italic text-sm text-gray-600">{post.category}</span>
         </div>
