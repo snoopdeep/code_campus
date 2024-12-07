@@ -125,17 +125,13 @@ export default function DashUsers() {
                       ></img>
                     {/* </Link> */}
                   </TableCell>
-                  <TableCell>
-                    {/* <Link
-                      className="font-medium text-gray-900 dark:text-white"
-                      to={`/post/${user.slug}`}
-                    > */}
+                  <TableCell className={user.isAdmin?"text-red-600":(user.isModerator?"text-violet-600":"")}>
                       {user.name}
                     {/* </Link> */}
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
                   {/* // if user is admin then show yes else no */}
-                  <TableCell>{user.isAdmin ? (<FaCheck className="text-green-700"/>) :(<FaCheck className="text-red-700"/>)}</TableCell>
+                  <TableCell>{user.isAdmin ? (<FaCheck className="text-green-700"/>) :(user.isModerator ? (<FaCheck className="text-violet-600"/>):(<FaCheck className="text-red-700"/>))}</TableCell>
                   {/* <TableCell>{user.isAdmin ? "yes" :"no"}</TableCell> */}
                   <TableCell>
                     <span
