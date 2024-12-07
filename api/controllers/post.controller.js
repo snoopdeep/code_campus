@@ -1,5 +1,7 @@
 import Post from "../models/post.model.js";
 import { errorHandler } from "../util/error.js";
+import User from "../models/user.model.js";
+import { sendMail } from "../util/sendMail.js";
 
 // Create a new post
 export const create = async (req, res, next) => {
@@ -17,20 +19,76 @@ export const create = async (req, res, next) => {
     ...req.body,
     slug,
     userId: req.user.id,
-    postUserName: req.user.name,
-    postUserProfilePicture: req.user.profilePicture,
   });
 
   try {
     const savedPost = await post.save();
-    console.log("this is post create middleware and post is :", post);
+    console.log("this is post create middleware and post is :");
+    // send mail to the user that ur post is under review
+    const user = await User.findById(req.user.id);
+    if (user) {
+      const message = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            .email-container {
+              font-family: Arial, sans-serif;
+              color: #333;
+              line-height: 1.6;
+            }
+            .header {
+              background-color: #4CAF50;
+              color: white;
+              text-align: center;
+              padding: 10px 0;
+            }
+            .content {
+              padding: 20px;
+              text-align: left;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 20px;
+              font-size: 0.9em;
+              color: #777;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="email-container">
+            <div class="header">
+              <h1>Thank You for Your Contribution!</h1>
+            </div>
+            <div class="content">
+              <p>Dear ${user.name},</p>
+              <p>Thank you for contributing to <strong>CodeCampus</strong>. Your post titled "<strong>${
+                req.body.title
+              }</strong>" has been successfully submitted.</p>
+              <p>We appreciate your effort in sharing valuable content with our community. To ensure that all posts adhere to our platform's guidelines, your submission is currently under review by our moderators. Once approved, it will be published on the platform.</p>
+              <p>If you have any questions or concerns, feel free to reach out to us.</p>
+              <p>Thank you for being an integral part of our community!</p>
+              <p>Best regards,<br/>The CodeCampus Team</p>
+            </div>
+            <div class="footer">
+              <p>&copy; ${new Date().getFullYear()} CodeCampus. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+      await sendMail(user.email, "userPostVerification", message);
+    }
     res.status(201).json(savedPost);
   } catch (err) {
     next(err);
   }
 };
 
-// Get posts with access control
+// 1: Get posts with access control ie req.user will be avaible
+// 2: non admin can only see there posts
+// 3: populate userId field and if user is deleted change name to [Deleted]
+// 4: if user is admin show all posts else show only post of that user
 export const getposts = async (req, res, next) => {
   try {
     console.log("hi from getposts");
@@ -46,6 +104,7 @@ export const getposts = async (req, res, next) => {
     if (!req.user.isAdmin) {
       filter.userId = req.user.id;
     }
+    // if(!req.user.isAdmin)filter.isVerified = true;
 
     // Apply additional filters from query parameters
     if (req.query.category) filter.category = req.query.category;
@@ -75,7 +134,7 @@ export const getposts = async (req, res, next) => {
     // if user is deleted then change the name of it
     const posts = tempPosts.map((post) => {
       // Check if the user exists and is marked as deleted
-      if (post.userId?.isDeleted) {
+      if (post?.userId?.isDeleted) {
         post.userId.name = `[Deleted]`;
       }
       return post;
@@ -106,7 +165,9 @@ export const getposts = async (req, res, next) => {
   }
 };
 
-// Get all posts without access control
+// 1: getAllPosts -> without access control ie req.user will not be there
+// 2: if user id deleted -> [Deleted]
+// 3: it should only show verified post to user and admin
 export const getAllPosts = async (req, res, next) => {
   try {
     console.log("hi from getAllPosts");
@@ -137,7 +198,7 @@ export const getAllPosts = async (req, res, next) => {
         { content: { $regex: req.query.searchTerm, $options: "i" } },
       ];
     }
-    // adding isVerified field to the filter object so that only verified post fetched
+    // // adding isVerified field to the filter object so that only verified post fetched
     filter.isVerified = true;
 
     // Fetch posts based on the filter, with sorting and pagination
@@ -277,7 +338,10 @@ export const verifyPost = async (req, res, next) => {
       );
     }
     // console.log(req.params);
-    const post = await Post.findById(req.params.postId);
+    const post = await Post.findById(req.params.postId).populate("userId", [
+      "email",
+      "name",
+    ]);
     if (!post) return next(errorHandler(404, "No post is found"));
     // change the isVarify filed of the post to true
     // console.log(post);
@@ -286,9 +350,95 @@ export const verifyPost = async (req, res, next) => {
     }
     post.isVerified = true;
     post.save();
+    // send mail to the user that his/her post is now available
+    console.log("this is verify post and post is :", post);
+    const message = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            .email-container {
+              font-family: Arial, sans-serif;
+              color: #333;
+              line-height: 1.6;
+            }
+            .header {
+              background-color: #4CAF50;
+              color: white;
+              text-align: center;
+              padding: 10px 0;
+            }
+            .content {
+              padding: 20px;
+              text-align: left;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 20px;
+              font-size: 0.9em;
+              color: #777;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="email-container">
+            <div class="header">
+              <h1>Congratulations! Your Post is Live!</h1>
+            </div>
+            <div class="content">
+              <p>Dear ${post?.userId?.name},</p>
+              <p>We are excited to inform you that your post titled "<strong>${
+                req.title
+              }</strong>" has been approved and is now available on <strong>CodeCampus</strong>!</p>
+              <p>Thank you for sharing valuable content with our community. Your post is now accessible to our users, and we’re confident it will make a positive impact.</p>
+              <p>You can view your post <a href="https://codecampus.com/posts/${
+                post.slug
+              }" style="color: #4CAF50; text-decoration: none;">here</a>.</p>
+              <p>If you have more experiences or insights to share, we encourage you to continue contributing to the platform.</p>
+              <p>Thank you for being an integral part of our community!</p>
+              <p>Best regards,<br/>The CodeCampus Team</p>
+            </div>
+            <div class="footer">
+              <p>&copy; ${new Date().getFullYear()} CodeCampus. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+    await sendMail(post.userId.email, "postVerificationConfirmed", message);
+
     res.status(200).json({
       status: "success",
       message: "post is verify successfully",
+    });
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
+};
+
+// get both verified and unverified post
+// 1: req.user will be there
+// 2:
+export const getVerifiedAndunVerifiedPost = async (req, res, next) => {
+  console.log("this is getunVerifyPosts");
+  try {
+    console.log(req.query);
+    const {slug} = req.query;
+    console.log({slug});
+    if (!slug) return next(errorHandler(404, "No post Slug"));
+    const post = await Post.findOne({slug}).populate("userId", [
+      "name",
+      "profilePicture",
+      "isVerified",
+      "isDeleted",
+    ]);
+    if (!post) return next(errorHandler(404, "No post is found"));
+    // console.log("hi this is from getVerandUnver post :", post);
+    res.status(200).json({
+      status: "success",
+      post,
     });
   } catch (err) {
     console.log(err);

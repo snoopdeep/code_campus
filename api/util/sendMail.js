@@ -11,8 +11,8 @@ export const sendMail = async (
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: process.env.EMAIL_USER, 
-      pass: process.env.EMAIL_PASS, 
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
     },
   });
 
@@ -28,7 +28,14 @@ export const sendMail = async (
       subject = "Password Reset Link";
       break;
     case "paymentSuccess":
-      subject="Thank You for Your Donation!"  
+      subject = "Thank You for Your Donation!";
+      break;
+    case "userPostVerification":
+      subject = "Post Under Verification";
+      break;
+    case "postVerificationConfirmed":
+      subject = "Congrats!!Post Verification Confirmed";
+      break;
     default:
       subject = "Notification from CodeCampus";
   }
@@ -42,7 +49,12 @@ export const sendMail = async (
   if (messageType === "otp" || messageType === "password_reset") {
     mailOptions.text =
       messageType === "otp" ? `Your OTP is: ${message}` : `${message}`;
-  } else if (messageType === "feedback"||messageType==="paymentSuccess") {
+  } else if (
+    messageType === "feedback" ||
+    messageType === "paymentSuccess" ||
+    messageType === "userPostVerification" ||
+    messageType === "postVerificationConfirmed"
+  ) {
     mailOptions.html = message; // Use HTML content for feedback
   } else {
     mailOptions.text = message; // Default to plain text
