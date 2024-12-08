@@ -341,10 +341,14 @@ export const verifyPost = async (req, res, next) => {
     const post = await Post.findById(req.params.postId).populate("userId", [
       "email",
       "name",
+      "isModerator",
     ]);
     if (!post) return next(errorHandler(404, "No post is found"));
     // change the isVarify filed of the post to true
     // console.log(post);
+    if (!post.userId.isModerator) {
+      return next(errorHandler(404, "You are not allowed to verify a post"));
+    }
     if (post.isVerified) {
       return next(errorHandler(400, "Post is already verified."));
     }
@@ -420,15 +424,14 @@ export const verifyPost = async (req, res, next) => {
 
 // get both verified and unverified post
 // 1: req.user will be there
-// 2:
 export const getVerifiedAndunVerifiedPost = async (req, res, next) => {
   console.log("this is getunVerifyPosts");
   try {
     console.log(req.query);
-    const {slug} = req.query;
-    console.log({slug});
+    const { slug } = req.query;
+    console.log({ slug });
     if (!slug) return next(errorHandler(404, "No post Slug"));
-    const post = await Post.findOne({slug}).populate("userId", [
+    const post = await Post.findOne({ slug }).populate("userId", [
       "name",
       "profilePicture",
       "isVerified",

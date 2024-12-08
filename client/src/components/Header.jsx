@@ -57,6 +57,7 @@ export default function Header() {
     const searchQ = urlParams.toString();
     navigate(`/search?${searchQ}`);
   };
+  console.log("this is header.jsx and user is", currentUser);
   return (
     <Navbar className="border-b-2">
       <Link
@@ -106,8 +107,26 @@ export default function Header() {
             }
           >
             <Dropdown.Header>
-              <span className="block text-sm">@{currentUser.name}</span>
-              <span className="block text-sm font-medium truncate">
+              <span
+                className={
+                  currentUser.isAdmin
+                    ? "block text-sm text-red-600"
+                    : currentUser.isModerator
+                    ? "block text-sm text-violet-600"
+                    : "block text-sm"
+                }
+              >
+                @{currentUser.name}
+              </span>
+              <span
+                className={
+                  currentUser.isAdmin
+                    ? "block text-sm text-red-600 font-medium truncate"
+                    : currentUser.isModerator
+                    ? "block text-sm text-violet-600 font-medium truncate"
+                    : "block text-sm font-medium truncate"
+                }
+              >
                 @{currentUser.email}
               </span>
             </Dropdown.Header>
@@ -134,14 +153,15 @@ export default function Header() {
         <Navbar.Link active={path === "/about"} as={"div"}>
           <Link to={"/about"}>About</Link>
         </Navbar.Link>
-        {currentUser ?
-          (<Navbar.Link active={path === "/feedback"} as={"div"}>
+        {currentUser ? (
+          <Navbar.Link active={path === "/feedback"} as={"div"}>
             <Link to={"/feedback"}>Feedback</Link>
-          </Navbar.Link>):(
-            <Navbar.Link active={path === "/sing-in"} as={"div"}>
-              <Link to={"/sign-in"}>Feedback</Link>
-            </Navbar.Link>
-          )}
+          </Navbar.Link>
+        ) : (
+          <Navbar.Link active={path === "/sing-in"} as={"div"}>
+            <Link to={"/sign-in"}>Feedback</Link>
+          </Navbar.Link>
+        )}
       </Navbar.Collapse>
     </Navbar>
   );

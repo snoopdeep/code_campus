@@ -128,7 +128,7 @@ export default function DashPosts() {
               <Table.HeadCell>Post title</Table.HeadCell>
               {/* <Table.HeadCell>Category</Table.HeadCell> */}
               <Table.HeadCell>Verified</Table.HeadCell>
-              {currentUser.isAdmin ? (
+              {currentUser.isAdmin ||currentUser.isModerator ? (
                 <Table.HeadCell>Verify Now</Table.HeadCell>
               ) : (
                 ""
@@ -168,7 +168,7 @@ export default function DashPosts() {
                   <TableCell>
                     {post.isVerified ? "verified" : "not verified"}
                   </TableCell>
-                  {currentUser.isAdmin ? (
+                  {currentUser.isAdmin ||currentUser.isModerator ? (
                     <TableCell>
                       {post.isVerified ? (
                         <FaCheck className="text-green-700" />
