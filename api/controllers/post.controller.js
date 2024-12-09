@@ -279,13 +279,6 @@ export const deletePost = async (req, res, next) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    // If not admin, ensure the user owns the post
-    // if (!req.user.isAdmin &&!req.user.isModerator && post.userId.toString() !== req.user.id) {
-    //   return res
-    //     .status(403)
-    //     .json({ message: "You are not allowed to delete this post" });
-    // }
-
     await Post.findByIdAndDelete(req.params.postId);
     res.status(200).json({ message: "Post deleted successfully" });
   } catch (err) {
@@ -300,7 +293,7 @@ export const updatePost = async (req, res, next) => {
   console.log(req.user);
 
   // Corrected logical condition: Use AND instead of OR
-  if (!req.user.isAdmin && req.user.id !== req.params.userId) {
+  if (!req.user.isAdmin && req.user.id !== req.params.userId&&  !req.user.isModerator){  
     return res
       .status(403)
       .json({ message: "You are not allowed to update this post" });
@@ -314,12 +307,6 @@ export const updatePost = async (req, res, next) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    // If not admin, ensure the user owns the post
-    if (!req.user.isAdmin && post.userId.toString() !== req.user.id) {
-      return res
-        .status(403)
-        .json({ message: "You are not allowed to update this post" });
-    }
 
     const updatedPost = await Post.findByIdAndUpdate(
       req.params.postId,
