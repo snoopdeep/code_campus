@@ -318,7 +318,7 @@ export const paymentSuccess = async (req, res, next) => {
         
         <h3>Donation Details:</h3>
         <ul>
-          <li><strong>Amount:</strong> INR ${amount}</li>
+          <li><strong>Amount:</strong> INR ${amount/100}</li>
           <li><strong>Payment ID:</strong> ${payment_id}</li>
           <li><strong>Order ID:</strong> ${order_id}</li>
           <li><strong>Date:</strong> ${new Date().toLocaleDateString()}</li>
