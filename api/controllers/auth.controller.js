@@ -197,10 +197,13 @@ export const resetPassword = async (req, res, next) => {
   console.log("hi from reset password");
   try {
     const resetToken = req.params.resetToken;
-    console.log(resetToken);
+    console.log("resetToken:", resetToken);
+
     // Password validation
-    if (!req.body.password)
-      return next(errorHandler(404, "password is required"));
+    if (!req.body.password) {
+      return next(errorHandler(404, "Password is required."));
+    }
+
     if (!checkPassword(req.body.password)) {
       return next(
         errorHandler(
@@ -209,38 +212,71 @@ export const resetPassword = async (req, res, next) => {
         )
       );
     }
+
     const hashedResetToken = crypto
       .createHash("sha256")
       .update(resetToken)
       .digest("hex");
-    console.log(hashedResetToken);
+    console.log("hashedResetToken:", hashedResetToken);
 
     const user = await User.findOne({
       passwordResetToken: hashedResetToken,
       passwordResetTokenExpire: { $gt: Date.now() },
     });
+
+    console.log("User found:", user);
+
+    if (!user) {
+      return next(errorHandler(404, "No user found or reset link has expired."));
+    }
+
+    // Check if new password matches old password
+    if (bcryptjs.compareSync(req.body.password, user.password)) {
+      return next(
+        errorHandler(404, "New password should not be the same as the old password.")
+      );
+    }
+
+    // Ensure password doesn't contain username or email prefix
     console.log(user);
-    if (!user) return next(errorHandler(404, "No user is found."));
-    const hashedPassword = bcryptjs.hashSync(req.body.password, 10);
+    if (
+      req.body.password.includes(user.name) ||
+      req.body.password.includes(user.email.split("@")[0])
+    ) {
+      return next(
+        errorHandler(404, "New password should not contain your username or email.")
+      );
+    }
+
+    // Hash the new password (make sure to await the promise)
+    const hashedPassword = await bcryptjs.hash(req.body.password, 10);
+
     user.password = hashedPassword;
     user.passwordResetToken = undefined;
     user.passwordResetTokenExpire = undefined;
     await user.save();
-    console.log("jwt secreate", process.env.JWT_SECRET);
+
+    console.log("JWT secret:", process.env.JWT_SECRET);
+
     const token = jwt.sign(
       { id: user._id, isAdmin: user.isAdmin, isModerator: user.isModerator },
       process.env.JWT_SECRET,
       {
-        expiresIn: "5m",
+        expiresIn: "5h",
       }
     );
-    console.log("token", token);
-    res.status(200).cookie("access_token", token, { httpOnly: true }).json({
-      status: "success",
-      data: user,
-    });
+
+    console.log("Generated token:", token);
+
+    res
+      .status(200)
+      .cookie("access_token", token, { httpOnly: true })
+      .json({
+        status: "success",
+        data: user,
+      });
   } catch (err) {
-    console.log(err);
+    console.error("Error in resetPassword controller:", err);
     next(err);
   }
 };

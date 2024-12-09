@@ -166,8 +166,8 @@ export default function DashPosts() {
                     </Link>
                   </TableCell>
                   {/* <TableCell>{post.category}</TableCell> */}
-                  <TableCell>
-                    {post.isVerified ? "verified" : "not verified"}
+                  <TableCell >
+                    <p className={post.isVerified?"text-green-500":""}>{post.isVerified ? "verified" : "not verified"}</p>
                   </TableCell>
                   {currentUser.isAdmin ||currentUser.isModerator ? (
                     <TableCell>

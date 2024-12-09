@@ -64,12 +64,12 @@ const FeedbackForm = () => {
       setFailureMessage(null);
       setSuccessMessage(null);
     }, 3000);
-    return () => clearTimeout(timer); // Cleanup on unmount or state change
+    return () => clearTimeout(timer);
   }, [failureMessage, successMessage]);
 
   return (
-    <div className="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-semibold mb-4 text-center">Feedback Form</h2>
+    <div className="max-w-xl mx-auto bg-feedbackFormCustomColor p-6 rounded-md shadow-lg m-8">
+      <h2 className="text-2xl text-black font-semibold mb-4 text-center">Feedback Form</h2>
       <form onSubmit={handleSubmit}>
         {/* Rating System */}
         <div className="mb-4">
@@ -106,7 +106,7 @@ const FeedbackForm = () => {
           <textarea
             id="feedback"
             rows="4"
-            className="w-full p-2 border border-gray-300 rounded-md"
+            className="w-full text-black p-2 border border-gray-300 rounded-md"
             placeholder="Your feedback..."
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
@@ -148,7 +148,7 @@ const FeedbackForm = () => {
           <textarea
             id="suggestions"
             rows="4"
-            className="w-full p-2 border border-gray-300 rounded-md"
+            className="w-full text-black p-2 border border-gray-300 rounded-md"
             placeholder="How can we improve CodeCampus?"
             value={suggestions}
             onChange={(e) => setSuggestions(e.target.value)}
@@ -158,7 +158,7 @@ const FeedbackForm = () => {
         {/* Submit Button */}
         <button
           type="submit"
-          className="w-full py-2 px-4 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600"
+          className="w-full py-2 px-4 bg-teal-500 text-white font-semibold rounded-md hover:bg-green-500"
         >
           Submit Feedback
         </button>
