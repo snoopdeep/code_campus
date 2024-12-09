@@ -8,7 +8,7 @@ export const verifyToken = async (req, res, next) => {
   const token = req.cookies.access_token; // access_token is the name of the cookie
   // verify the token
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    // console.log("hello from verifyUser controller, this is user: ", user);
+    console.log("hello from verifyUser controller, this is user: ", user);
     if (err) {
       return next(errorHandler(401, "Unauthorized"));
     }

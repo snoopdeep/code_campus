@@ -26,6 +26,7 @@ export default function DashPosts() {
         );
         console.log('this is dashpost and res is ',res);
         const data = await res.json();
+        console.log('this is dashpost and data is ',data);
         if (res.ok) {
           setUserPosts(data.posts);
           if (data.posts.length < 9) {

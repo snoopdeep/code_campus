@@ -99,10 +99,18 @@ export const getposts = async (req, res, next) => {
     // Build the filter based on user role
     let filter = {};
     // console.log(req.user);
-
+    const userResponse = await fetch(`http://localhost:3000/api/users/${req.user.id}`, {
+      method: "GET",
+      credentials: "include",
+    });
+    const user=await userResponse.json();
+    // if(user.status!=="success")return next(404,"No user is found");
+    console.log('this is getposts and user is ',req.user);
     // Non-admins see only their posts
-    if (!req.user.isAdmin) {
+    if (!req?.user?.isAdmin && !req.user.isModerator) {
+      console.log('hi from the if block');
       filter.userId = req.user.id;
+      if(user?.isModerator)filter.userId=user.data.userId;
     }
     // if(!req.user.isAdmin)filter.isVerified = true;
 
@@ -329,11 +337,18 @@ export const updatePost = async (req, res, next) => {
 export const verifyPost = async (req, res, next) => {
   console.log("hello from the verify post");
   try {
-    if (!req.user.isAdmin) {
+    // let responseUser=req.user.;
+    // if(req.responseUser) user=await fetch(`http://localhost:3000/api/users/${req.user.id}`,{
+    //   method:"GET",
+    //   credentials:"include"
+    // });
+    // const user=await responseUser.json();
+    // console.log('user is ',user);
+    if (!req.user.isAdmin&&!req.user.isModerator) {
       return next(
         errorHandler(
           404,
-          "you are not allow to verify post! Only admin can do it."
+          "you are not allow to verify post! Only admin || moderator can do it."
         )
       );
     }
@@ -341,14 +356,14 @@ export const verifyPost = async (req, res, next) => {
     const post = await Post.findById(req.params.postId).populate("userId", [
       "email",
       "name",
-      "isModerator",
+      // "isModerator",
     ]);
     if (!post) return next(errorHandler(404, "No post is found"));
     // change the isVarify filed of the post to true
     // console.log(post);
-    if (!post.userId.isModerator) {
-      return next(errorHandler(404, "You are not allowed to verify a post"));
-    }
+    // if (!post.userId.isModerator) {
+    //   return next(errorHandler(404, "You are not allowed to verify a post"));
+    // }
     if (post.isVerified) {
       return next(errorHandler(400, "Post is already verified."));
     }
@@ -392,10 +407,10 @@ export const verifyPost = async (req, res, next) => {
             <div class="content">
               <p>Dear ${post?.userId?.name},</p>
               <p>We are excited to inform you that your post titled "<strong>${
-                req.title
+                post.title
               }</strong>" has been approved and is now available on <strong>CodeCampus</strong>!</p>
               <p>Thank you for sharing valuable content with our community. Your post is now accessible to our users, and we’re confident it will make a positive impact.</p>
-              <p>You can view your post <a href="https://codecampus.com/posts/${
+              <p>You can view your post <a href="https://localhost:3000/post/${
                 post.slug
               }" style="color: #4CAF50; text-decoration: none;">here</a>.</p>
               <p>If you have more experiences or insights to share, we encourage you to continue contributing to the platform.</p>

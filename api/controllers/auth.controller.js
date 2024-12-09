@@ -97,7 +97,11 @@ export const signin = async (req, res, next) => {
     // user is validate
     validUser.password = undefined;
     const token = jwt.sign(
-      { id: validUser._id, isAdmin: validUser.isAdmin },
+      {
+        id: validUser._id,
+        isAdmin: validUser.isAdmin,
+        isModerator: validUser.isModerator,
+      },
       process.env.JWT_SECRET,
       {
         expiresIn: "5h",
@@ -120,7 +124,7 @@ export const google = async (req, res, next) => {
     const user = await User.findOne({ email });
     if (user) {
       const token = jwt.sign(
-        { id: user._id, isAdmin: user.isAdmin },
+        { id: user._id, isAdmin: user.isAdmin, isModerator: user.isModerator },
         process.env.JWT_SECRET,
         {
           expiresIn: "1h",
@@ -224,7 +228,7 @@ export const resetPassword = async (req, res, next) => {
     await user.save();
     console.log("jwt secreate", process.env.JWT_SECRET);
     const token = jwt.sign(
-      { id: user._id, isAdmin: user.isAdmin },
+      { id: user._id, isAdmin: user.isAdmin, isModerator: user.isModerator },
       process.env.JWT_SECRET,
       {
         expiresIn: "5m",
