@@ -99,18 +99,21 @@ export const getposts = async (req, res, next) => {
     // Build the filter based on user role
     let filter = {};
     // console.log(req.user);
-    const userResponse = await fetch(`http://localhost:3000/api/users/${req.user.id}`, {
-      method: "GET",
-      credentials: "include",
-    });
-    const user=await userResponse.json();
+    const userResponse = await fetch(
+      `http://localhost:3000/api/users/${req.user.id}`,
+      {
+        method: "GET",
+        credentials: "include",
+      }
+    );
+    const user = await userResponse.json();
     // if(user.status!=="success")return next(404,"No user is found");
-    console.log('this is getposts and user is ',req.user);
+    console.log("this is getposts and user is ", req.user);
     // Non-admins see only their posts
     if (!req?.user?.isAdmin && !req.user.isModerator) {
-      console.log('hi from the if block');
+      console.log("hi from the if block");
       filter.userId = req.user.id;
-      if(user?.isModerator)filter.userId=user.data.userId;
+      if (user?.isModerator) filter.userId = user.data.userId;
     }
     // if(!req.user.isAdmin)filter.isVerified = true;
 
@@ -256,10 +259,15 @@ export const getAllPosts = async (req, res, next) => {
 
 // Delete a post with access control
 export const deletePost = async (req, res, next) => {
-  console.log("hi from deletePost");
+  console.log("hi from deletePost", req.user);
+  console.log("req.params.userId", req.params.userId);
 
   // Corrected logical condition: Use AND instead of OR
-  if (!req.user.isAdmin && req.user.id !== req.params.userId) {
+  if (
+    !req.user.isAdmin && // Not an admin
+    req.user.id !== req.params.userId && // Not the owner of the post
+    !req.user.isModerator // Not a moderator
+  ) {
     return res
       .status(403)
       .json({ message: "You are not allowed to delete this post" });
@@ -272,11 +280,11 @@ export const deletePost = async (req, res, next) => {
     }
 
     // If not admin, ensure the user owns the post
-    if (!req.user.isAdmin && post.userId.toString() !== req.user.id) {
-      return res
-        .status(403)
-        .json({ message: "You are not allowed to delete this post" });
-    }
+    // if (!req.user.isAdmin &&!req.user.isModerator && post.userId.toString() !== req.user.id) {
+    //   return res
+    //     .status(403)
+    //     .json({ message: "You are not allowed to delete this post" });
+    // }
 
     await Post.findByIdAndDelete(req.params.postId);
     res.status(200).json({ message: "Post deleted successfully" });
@@ -344,7 +352,7 @@ export const verifyPost = async (req, res, next) => {
     // });
     // const user=await responseUser.json();
     // console.log('user is ',user);
-    if (!req.user.isAdmin&&!req.user.isModerator) {
+    if (!req.user.isAdmin && !req.user.isModerator) {
       return next(
         errorHandler(
           404,
