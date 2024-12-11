@@ -7,12 +7,24 @@ import commentRouter from "./routes/comment.route.js";
 import dotenv from "dotenv";
 dotenv.config();
 import cookieParser from "cookie-parser";
+import xss from "xss-clean";
+import helmet from "helmet";
+import mongoSanitize from "express-mongo-sanitize";
 
 const app = express();
 // to allow json data to the backend
 app.use(express.json());
 // cookie parser middleware which will parse the cookies from the request
 app.use(cookieParser());
+
+// Set security HTTP headers
+app.use(helmet());
+
+// Data sanitization against NoSQL query injection
+app.use(mongoSanitize());
+
+// Data sanitization against XSS
+app.use(xss());
 
 // // import cors for cross origin resource sharing
 import cors from "cors";
@@ -25,14 +37,6 @@ app.use(
   })
 );
 
-// Alternatively, configure CORS for specific origins
-// app.use(cors({
-//   origin: 'http://localhost:5173'  // Only allow this origin to access the resources
-// }));
-
-// import routes
-// conntect to mongodb
-// Check if the environment variable is loaded
 // console.log("MONGO_URL:", process.env.MONGO_URL);
 mongoose
   .connect(process.env.MONGO_URL)

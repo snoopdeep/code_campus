@@ -14,7 +14,7 @@ export const create = async (req, res, next) => {
     .split(" ")
     .join("-")
     .replace(/[^a-zA-Z0-9-]/g, "");
-  console.log("this is create new post user is : ", req.user);
+  console.log("this is create new post, post is : ", req.body);
   const post = new Post({
     ...req.body,
     slug,

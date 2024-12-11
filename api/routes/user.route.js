@@ -11,8 +11,10 @@ import {
   paymentSuccess
 } from "../controllers/user.controller.js";
 import { verifyToken } from "../util/verifyUser.js";
+import { param } from "express-validator";
 console.log("Hello from user route!!");
 // router.get("/test", test);
+
 router.get("/getusers", verifyToken, getUsers);
 router.put("/update/:userId", verifyToken, updateUser);
 router.delete("/delete/:userId", verifyToken, deleteUser);
