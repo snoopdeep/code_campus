@@ -67,9 +67,10 @@ export const verifyEmail = async (req, res, next) => {
   }
 
   const domain = '@msrit.edu';
-  if (email.endsWith(domain)) {
-      next(); 
-  } else {
-      return res.status(400).send({ error: 'You are not allowed. Invalid email domain.' });
-  }
+//   if (email.endsWith(domain)) {
+//       next(); 
+//   } else {
+//       return res.status(400).send({ error: 'You are not allowed. Invalid email domain.' });
+//   }
+next();
 };

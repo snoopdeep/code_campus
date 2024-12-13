@@ -64,10 +64,12 @@ export default function Header() {
         to={"/"}
         className="self-center whitespace-nowrap text-sm sm:text-xl font-semibold dark:text-white"
       >
-        <span className="px-2 py-1 bg-gradient-to-r from-orange-500 via-white-500 to-green-500 rounded-lg text-white">
+        <span className=" py-1 text-2xl rounded-lg dark:text-white">
           code
         </span>
         Campus
+        {/* <img src="/logo.png" className="w-12">
+        </img> */}
       </Link>
       <form onSubmit={handleSubmit}>
         <TextInput

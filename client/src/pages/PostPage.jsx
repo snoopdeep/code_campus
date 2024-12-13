@@ -180,19 +180,29 @@ export default function PostPage() {
 
       {/* Enhanced content rendering with custom styles */}
       <div
-        className="p-3 max-w-2xl mx-auto w-full post-content prose prose-lg 
-        prose-headings:text-gray-900 
-        prose-p:text-gray-700 
-        prose-ul:list-disc 
-        prose-ol:list-decimal 
-        prose-ul:pl-6 
-        prose-ol:pl-6 
-        prose-code:bg-gray-600 
-        prose-code:p-1 
-        prose-code:rounded 
-        prose-pre:bg-gray-600 
-        prose-pre:p-4 
-        prose-pre:rounded"
+        className="
+    p-3 max-w-2xl mx-auto w-full post-content prose prose-lg
+    text-gray-700 dark:text-gray-300
+    dark:prose-h1:text-gray-300
+    dark:prose-h2:text-gray-300
+    dark:prose-h3:text-gray-300
+    dark:prose-h4:text-gray-300
+    dark:prose-h5:text-gray-300
+    dark:prose-h6:text-gray-300
+    dark:prose-p:text-gray-300
+    dark:prose-a:text-gray-300
+    dark:prose-strong:text-gray-300
+    dark:prose-em:text-gray-300
+    dark:prose-u:text-gray-300
+    dark:prose-s:text-gray-300
+    dark:prose-ul:text-gray-300
+    dark:prose-ol:text-gray-300
+    dark:prose-li:text-gray-300
+    dark:prose-blockquote:text-gray-300
+    dark:prose-code:text-gray-300
+    dark:prose-pre:text-gray-300
+    dark:prose-img:text-gray-300
+  "
         dangerouslySetInnerHTML={{ __html: sanitizedContent }}
       ></div>
 

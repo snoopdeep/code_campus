@@ -106,6 +106,7 @@ export const deleteUser = async (req, res, next) => {
     userToDelete.isAdmin = false;
     userToDelete.isDeleted = true;
     userToDelete.isVerified = false;
+    userToDelete.isModerator=false;
     await userToDelete.save({ validateBeforeSave: false });
     // await User.findByIdAndDelete(userIdToDelete);
     res.status(200).json({ message: "User has been deleted" });

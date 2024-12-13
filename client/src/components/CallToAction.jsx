@@ -83,7 +83,7 @@ export default function CallToAction() {
     <div className="flex flex-col sm:flex-row p-3 border border-teal-500 justify-center items-center rounded-tl-3xl rounded-br-3xl text-center">
       <div className="flex-1 justify-center flex flex-col">
         <h2 className="text-2xl">Support CodeCampus</h2>
-        <p className="text-black my-2">
+        <p className="text-gray-700 dark:text-gray-300 my-2">
           Your contributions help us maintain and improve the platform. If you
           found the interview experiences helpful, consider supporting us with a
           small donation.

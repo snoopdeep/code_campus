@@ -39,9 +39,9 @@ export default function Home() {
           <h1 className="text-3xl font-bold lg:text-5xl">
             Welcome to CodeCampus
           </h1>
-          <p className="text-gray-500 text-xs sm:text-sm mt-4">
-            A platform where students share their interview
-            experiences, tips, and insights to help each other succeed. <br />
+          <p className="dark:text-gray-300 text-xs sm:text-sm mt-4">
+            A platform where students share their interview experiences, tips,
+            and insights to help each other succeed. <br />
             Whether you're preparing for your first job or advancing your
             career, CodeCampus is here to guide you every step of the way.
           </p>
@@ -51,6 +51,12 @@ export default function Home() {
           >
             See All Posts
           </Link>
+          <button
+            onClick={handleImageClick}
+            className="w-1/2 mt-10 px-8 py-4 bg-teal-400 text-white font-semibold text-xl rounded-lg hover:bg-teal-600 transition duration-200 ease-in-out"
+          >
+            Create a Post
+          </button>
         </div>
 
         {/* Right Section (40%) */}
