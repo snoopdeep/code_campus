@@ -5,6 +5,7 @@ import { sendMail } from "../util/sendMail.js";
 
 // Create a new post
 export const create = async (req, res, next) => {
+  console.log('this is create post.jsx :',req.body);
   if (!req.body.title || !req.body.content) {
     return res.status(400).json({ message: "Title and content are required" });
   }

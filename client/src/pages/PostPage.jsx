@@ -179,6 +179,24 @@ export default function PostPage() {
       </div>
 
       {/* Enhanced content rendering with custom styles */}
+      {/* <div
+        className="p-3 max-w-2xl mx-auto w-full post-content prose prose-lg 
+    prose-headings:text-gray-900 
+    dark:prose-headings:text-gray-300
+    prose-p:text-gray-700 
+    dark:prose-p:text-gray-300
+    prose-ul:list-disc 
+    prose-ol:list-decimal 
+    prose-ul:pl-6 
+    prose-ol:pl-6 
+    prose-code:bg-gray-600 
+    prose-code:p-1 
+    prose-code:rounded 
+    prose-pre:bg-gray-600 
+    prose-pre:p-4 
+    prose-pre:rounded"
+        dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+      ></div> */}
       <div
         className="
     p-3 max-w-2xl mx-auto w-full post-content prose prose-lg

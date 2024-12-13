@@ -15,8 +15,6 @@ export default function SignIn() {
     password: "",
   });
   const { loading, error: errorMessage } = useSelector((state) => state.user);
-  // const [errorMessage, setErrorMessage] = React.useState(null);
-  // const [loding, setLoading] = React.useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -106,15 +104,7 @@ export default function SignIn() {
         {/* right */}
         <div className="flex-1">
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-            {/* <div>
-              <Label value="Your username"></Label>
-              <TextInput
-                type="text"
-                placeholder="Username"
-                id="name"
-                onChange={handleChange}
-              ></TextInput>
-            </div> */}
+           
             <div>
               <Label value="Your email"></Label>
               <TextInput

@@ -24,7 +24,7 @@ app.use(helmet());
 app.use(mongoSanitize());
 
 // Data sanitization against XSS
-app.use(xss());
+// app.use(xss()); -> this is not letting rendering the correct html format
 
 // // import cors for cross origin resource sharing
 import cors from "cors";
