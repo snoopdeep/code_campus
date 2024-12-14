@@ -89,7 +89,7 @@ export default function Home() {
         )}
       </div>
 
-      <div className="p-3 bg-amber-100 dark:bg-slate-500">
+      <div className="p-3 ">
         <CallToAction />
       </div>
     </div>

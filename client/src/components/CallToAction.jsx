@@ -80,10 +80,10 @@ export default function CallToAction() {
   };
 
   return (
-    <div className="flex flex-col sm:flex-row p-3 border border-teal-500 justify-center items-center rounded-tl-3xl rounded-br-3xl text-center">
+    <div className="flex flex-col sm:flex-row p-3 border border-teal-500 justify-center items-center rounded-tl-3xl rounded-br-3xl text-center bg-callToActionLightTheme dark:bg-callToActionDarkTheme">
       <div className="flex-1 justify-center flex flex-col">
-        <h2 className="text-2xl">Support CodeCampus</h2>
-        <p className="text-gray-700 dark:text-gray-300 my-2">
+        <h2 className="text-2xl text-callToActionTextTheme font-bold">Support CodeCampus</h2>
+        <p className="text-callToActionTextTheme  dark:callToActionTextTheme my-2">
           Your contributions help us maintain and improve the platform. If you
           found the interview experiences helpful, consider supporting us with a
           small donation.
@@ -98,11 +98,12 @@ export default function CallToAction() {
               setAmount(value);
             }
           }}
-          className="mb-4"
+          className="mb-4 "
         />
         <Button
-          gradientDuoTone="purpleToPink"
-          className="rounded-tl-xl rounded-bl-none"
+          // gradientDuoTone=""
+          
+          className="rounded-tl-xl rounded-bl-none bg-callToActionButtonTheme"
           onClick={handleDonate}
           disabled={loading}
         >
