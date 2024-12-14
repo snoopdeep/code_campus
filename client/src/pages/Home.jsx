@@ -33,13 +33,13 @@ export default function Home() {
 
   return (
     <div>
-      <div className="flex flex-col lg:flex-row gap-20 p-6 lg:p-28 px-3 max-w-6xl mx-auto">
+      <div className="flex flex-col lg:flex-row gap-10 lg:gap-20 p-6 lg:p-28 px-3 max-w-6xl mx-auto">
         {/* Left Section (60%) */}
-        <div className="lg:w-3/5 flex flex-col justify-center">
+        <div className="lg:w-3/5 flex flex-col justify-center text-center lg:text-left">
           <h1 className="text-3xl font-bold lg:text-5xl">
             Welcome to CodeCampus
           </h1>
-          <p className="dark:text-gray-300 text-xs sm:text-sm mt-4">
+          <p className="dark:text-gray-300 text-sm sm:text-base mt-4">
             A platform where students share their interview experiences, tips,
             and insights to help each other succeed. <br />
             Whether you're preparing for your first job or advancing your
@@ -53,18 +53,18 @@ export default function Home() {
           </Link>
           <button
             onClick={handleImageClick}
-            className="w-1/2 mt-10 px-8 py-4 bg-teal-400 text-white font-semibold text-xl rounded-lg hover:bg-teal-600 transition duration-200 ease-in-out"
+            className="w-full sm:w-auto mt-6 px-3 py-2 bg-teal-400 text-white font-semibold text-lg rounded-lg hover:bg-teal-600 transition duration-200 ease-in-out"
           >
             Create a Post
           </button>
         </div>
 
         {/* Right Section (40%) */}
-        <div className="lg:w-2/5 flex justify-center items-center">
+        <div className="lg:w-2/5 flex justify-center items-center mt-6 lg:mt-0">
           <img
             src="/post.gif"
             alt="CodeCampus Illustration"
-            className="w-4/4 h-auto rounded-lg shadow-lg"
+            className="w-3/4 sm:w-2/3 lg:w-full h-auto rounded-lg shadow-lg"
             onClick={handleImageClick}
           />
         </div>

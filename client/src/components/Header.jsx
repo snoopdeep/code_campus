@@ -1,38 +1,28 @@
 import React, { useEffect, useState } from "react";
-import {
-  Navbar,
-  TextInput,
-  Button,
-  Dropdown,
-  Avatar,
-  theme,
-} from "flowbite-react";
+import { Navbar, TextInput, Button, Dropdown, Avatar } from "flowbite-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AiOutlineSearch } from "react-icons/ai";
-import { FaMoon, FaSun } from "react-icons/fa";
+import { FaMoon, FaSun, FaBars, FaTimes } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { toggleTheme } from "../redux/theme/themeSlice";
 import { signOutSuccess } from "../redux/user/userSlice";
+
 export default function Header() {
-  // initialize dispatch to use the action
   const dispatch = useDispatch();
-  // to get current user from redux toolkit
   const { currentUser } = useSelector((state) => state.user);
   const { theme } = useSelector((state) => state.theme);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  // console.log("current user", currentUser);
-  // console.log(currentUser.profilePicture);
-  // to active the path ie color effect when we on that page
   const path = useLocation().pathname;
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
-    const searchTemFromURL = urlParams.get("searchTerm");
-    if (searchTemFromURL) setSearchTerm(searchTemFromURL);
+    const searchTermFromURL = urlParams.get("searchTerm");
+    if (searchTermFromURL) setSearchTerm(searchTermFromURL);
   }, [location]);
-  // handle signout
+
   const handleSignOut = async () => {
     try {
       const res = await fetch("http://localhost:3000/api/users/signout", {
@@ -49,53 +39,83 @@ export default function Header() {
       console.log(err);
     }
   };
+
   const handleSubmit = (e) => {
-    console.log("hii", e);
     e.preventDefault();
     const urlParams = new URLSearchParams(location.search);
     urlParams.set("searchTerm", searchTerm);
     const searchQ = urlParams.toString();
     navigate(`/search?${searchQ}`);
+    setIsSearchOpen(false);
   };
-  console.log("this is header.jsx and user is", currentUser);
+
+  const toggleSearch = () => {
+    setIsSearchOpen(!isSearchOpen);
+  };
+
   return (
-    <Navbar className="border-b-2">
+    <Navbar className="border-b-2 relative">
       <Link
         to={"/"}
         className="self-center whitespace-nowrap text-sm sm:text-xl font-semibold dark:text-white"
       >
-        <span className=" py-1 text-2xl rounded-lg dark:text-white">
-          code
-        </span>
-        Campus
-        {/* <img src="/logo.png" className="w-12">
-        </img> */}
+        <span className="py-1 text-2xl rounded-lg dark:text-white">code</span>
+        <span className="text-red-500 mx-1">Campus</span>
       </Link>
-      <form onSubmit={handleSubmit}>
-        <TextInput
-          type="text"
-          placeholder="Search..."
-          rightIcon={AiOutlineSearch}
-          className="hidden lg:inline"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </form>
-      <Button className="w-12 h-10 lg:hidden" color={"gray"} pill>
-        <AiOutlineSearch></AiOutlineSearch>
-      </Button>
-      <div className="flex gap-2 md:order-2">
+
+      {/* Mobile Search Toggle */}
+      <div className="flex items-center lg:hidden">
         <Button
-          className="w-12 h-10 hidden sm:inline"
+          className="w-12 h-10 mr-2"
+          color={"gray"}
+          pill
+          onClick={toggleSearch}
+        >
+          {isSearchOpen ? <FaTimes /> : <AiOutlineSearch />}
+        </Button>
+        <Navbar.Toggle />
+      </div>
+
+      <div className="flex gap-2 md:order-2">
+        {/* Desktop Search */}
+        <form onSubmit={handleSubmit} className="hidden lg:block">
+          <TextInput
+            type="text"
+            placeholder="Search..."
+            rightIcon={AiOutlineSearch}
+            className="w-40"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </form>
+
+        {/* Mobile Search Dropdown */}
+        {isSearchOpen && (
+          <div className="absolute top-full left-0 w-full p-2 bg-white dark:bg-gray-800 lg:hidden z-50">
+            <form onSubmit={handleSubmit} className="w-full">
+              <TextInput
+                type="text"
+                placeholder="Search..."
+                rightIcon={AiOutlineSearch}
+                className="w-full"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </form>
+          </div>
+        )}
+
+        {/* Theme Toggle */}
+        <Button
+          className="w-12 h-10 hidden sm:inline "
           color={"gray"}
           pill
           onClick={() => dispatch(toggleTheme())}
         >
-          {/* // if theme is light then show sun icon else moon icon */}
           {theme === "light" ? <FaSun /> : <FaMoon />}
-          {/* <FaMoon /> */}
         </Button>
-        {/* // if user is logged in then show them the dropdown+ avatar else sign in button */}
+
+        {/* User Dropdown */}
         {currentUser ? (
           <Dropdown
             arrowIcon={false}
@@ -145,9 +165,9 @@ export default function Header() {
             </Button>
           </Link>
         )}
-
-        <Navbar.Toggle></Navbar.Toggle>
       </div>
+
+      {/* Mobile Navbar Collapse (existing structure) */}
       <Navbar.Collapse>
         <Navbar.Link active={path === "/"} as={"div"}>
           <Link to={"/"}>Home</Link>
@@ -160,10 +180,22 @@ export default function Header() {
             <Link to={"/feedback"}>Feedback</Link>
           </Navbar.Link>
         ) : (
-          <Navbar.Link active={path === "/sing-in"} as={"div"}>
+          <Navbar.Link active={path === "/sign-in"} as={"div"}>
             <Link to={"/sign-in"}>Feedback</Link>
           </Navbar.Link>
         )}
+        {/* Theme Toggle for Mobile */}
+        <Navbar.Link as={"div"} className="lg:hidden">
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => dispatch(toggleTheme())}
+          >
+            {theme === "light" ? "Switch to Dark Mode" : "Switch to Light Mode"}
+            <span className="ml-2">
+              {theme === "light" ? <FaSun /> : <FaMoon />}
+            </span>
+          </div>
+        </Navbar.Link>
       </Navbar.Collapse>
     </Navbar>
   );
