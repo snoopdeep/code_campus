@@ -1,4 +1,4 @@
-import { Alert, Button, Textarea } from "flowbite-react";
+import { Alert, Button, Textarea, Spinner } from "flowbite-react";
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -13,8 +13,9 @@ export default function CommentSection({ postId }) {
   const [comment, setComment] = useState("");
   const [commentError, setCommentError] = useState(null);
   const [comments, setComments] = useState([]);
-  const [showModel,setShowModel]=useState(false);
-  const [commentToDelete,setCommentToDelete]=useState(null);
+  const [showModel, setShowModel] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   // console.log("comments are ", comments);
   // console.log("post id is ", postId);
@@ -27,6 +28,7 @@ export default function CommentSection({ postId }) {
     }
     try {
       setCommentError(null);
+      setLoading(true);
       const res = await fetch("http://localhost:3000/api/comment/create", {
         method: "POST",
         credentials: "include",
@@ -40,14 +42,22 @@ export default function CommentSection({ postId }) {
         }),
       });
       const data = await res.json();
-      // console.log(data);
+      console.log(data);
+      // restrict the bad/ toxic comment
+      if (data.status === "comment can't be posted") {
+        setCommentError(data.message);
+        setLoading(false);
+        return;
+      }
       if (res.ok) {
         setComment("");
         setCommentError(null);
+        setLoading(false);
         setComments([data, ...comments]);
       }
     } catch (err) {
       setCommentError("Something went wrong, please try again later");
+      setLoading(false);
       console.log(err);
     }
   };
@@ -106,31 +116,50 @@ export default function CommentSection({ postId }) {
     }
   };
 
-  const handleEdit=function(commentID,updatedComment){
-    console.log('this is handle edit.. ');
-    console.log(commentID,updatedComment);
-    setComments(comments.map(comment=>{
-     return comment._id===commentID?{...comment, content:updatedComment}:comment;
-      // if that comment match then only change the content of it else set to comment only for others.. 
-    }))
-  }
-  const handleDeleteComment= async()=>{
+  const handleEdit = function (commentID, updatedComment) {
+    console.log("this is handle edit.. ");
+    console.log(commentID, updatedComment);
+    setComments(
+      comments.map((comment) => {
+        return comment._id === commentID
+          ? { ...comment, content: updatedComment }
+          : comment;
+        // if that comment match then only change the content of it else set to comment only for others..
+      })
+    );
+  };
+  const handleDeleteComment = async () => {
     setShowModel(false);
-    try{  
-      if(!currentUser){
-        navigate('/sign-in');
+    try {
+      if (!currentUser) {
+        navigate("/sign-in");
         return;
       }
-        const response= await fetch(`http://localhost:3000/api/comment/deleteComment/${commentToDelete}`,{
-          credentials:"include",
-          method:"DELETE",
-        });
-        setComments(comments.filter(comment=>comment._id!==commentToDelete));
-    }catch(err){
+      const response = await fetch(
+        `http://localhost:3000/api/comment/deleteComment/${commentToDelete}`,
+        {
+          credentials: "include",
+          method: "DELETE",
+        }
+      );
+      setComments(
+        comments.filter((comment) => comment._id !== commentToDelete)
+      );
+    } catch (err) {
       console.log(err);
     }
-  }
-  // comments.map(comment=>console.log(comment._id));
+  };
+  // Clear the commentError after 5 seconds
+  useEffect(() => {
+    if (commentError) {
+      const timer = setTimeout(() => {
+        setCommentError(null);
+        setComment("");
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [commentError]);
   return (
     <div className="max-w-2xl mx-auto w-full p-3">
       {currentUser ? (
@@ -171,8 +200,20 @@ export default function CommentSection({ postId }) {
             <p className="text-gray-500 text-xs">
               {500 - comment.length} character remaining..
             </p>
-            <Button outline gradientDuoTone={"purpleToBlue"} type="submit">
-              Submit
+            <Button
+              outline
+              gradientDuoTone={"purpleToBlue"}
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? (
+                <div className="flex items-center">
+                  <Spinner size="sm" aria-label="Loading..." />
+                  <span className="pl-3">Analying the comment...</span>
+                </div>
+              ) : (
+                "Submit"
+              )}
             </Button>
           </div>
           {commentError && (
@@ -199,7 +240,7 @@ export default function CommentSection({ postId }) {
             comment={comment}
             onLike={handleLikeComment}
             onEdit={handleEdit}
-            onDelete={(commentId)=>{ 
+            onDelete={(commentId) => {
               setShowModel(true);
               setCommentToDelete(commentId);
             }}
@@ -207,42 +248,40 @@ export default function CommentSection({ postId }) {
         ))}
         {/* //pop up model */}
         <Modal
-        show={showModel}
-        onClose={() => setShowModel(false)}
-        popup
-        size={"md"}
-      >
-        <Modal.Header />
-        <Modal.Body>
-          <div className="text-center">
-            <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
-            <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
-              Are you sure you want to delete this comment?
-            </h3>
-            <div className="flex justify-center gap-4 ">
-              <Button
-                color={"failure"}
-                onClick={() => {
-                  handleDeleteComment();
-                }}
-                className="mr-2"
-              >
-                Yes, I'm sure
-              </Button>
-              <Button
-                color={"gray"}
-                onClick={() => setShowModel(false)}
-                className="ml-2"
-              >
-                No, cancle
-              </Button>
+          show={showModel}
+          onClose={() => setShowModel(false)}
+          popup
+          size={"md"}
+        >
+          <Modal.Header />
+          <Modal.Body>
+            <div className="text-center">
+              <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
+              <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
+                Are you sure you want to delete this comment?
+              </h3>
+              <div className="flex justify-center gap-4 ">
+                <Button
+                  color={"failure"}
+                  onClick={() => {
+                    handleDeleteComment();
+                  }}
+                  className="mr-2"
+                >
+                  Yes, I'm sure
+                </Button>
+                <Button
+                  color={"gray"}
+                  onClick={() => setShowModel(false)}
+                  className="ml-2"
+                >
+                  No, cancle
+                </Button>
+              </div>
             </div>
-          </div>
-        </Modal.Body>
-      </Modal>
+          </Modal.Body>
+        </Modal>
       </>
     </div>
-    
   );
 }
-

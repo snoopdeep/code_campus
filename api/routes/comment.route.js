@@ -10,7 +10,9 @@ import {
   getAllComments,
 } from "../controllers/comment.controller.js";
 
-router.post("/create", verifyToken, createComment);
+import {perspectiveMiddleware} from "../util/perspectiveContentAnalyse.js";
+
+router.post("/create", verifyToken, perspectiveMiddleware, createComment);
 router.get("/getPostComments/:postId", getPostComments);
 router.put("/likeComment/:commentId", verifyToken, likeComment);
 router.put("/editComment/:commentId", verifyToken, editComment);
