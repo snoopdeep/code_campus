@@ -19,18 +19,33 @@ function checkPassword(str) {
 //1: signup
 export const signup = async (req, res, next) => {
   console.log("Hello from signup controller ", " Request body:", req.body);
-  const { name, email, password } = req.body;
+  const { name, fullName, email,password, confirmPassword } = req.body; // USN, 
   if (
     !name ||
+    !fullName ||
     !email ||
+    // !USN ||
     !password ||
+    !confirmPassword ||
     name.trim() === "" ||
+    fullName.trim() === "" ||
     email.trim() === "" ||
-    password.trim() === ""
+    // USN.trim() === "" ||
+    password.trim() === "" ||
+    confirmPassword.trim() === ""
   ) {
     return next(errorHandler(400, "All fields are required"));
   }
-
+  // checking usn and email compitability
+  // if (email.toLowerCase().split("@")[0] !== USN) {
+  //   return next(
+  //     errorHandler(
+  //       404,
+  //       `The provided USN ${USN} does not match the email ${email}. ` +
+  //         `Please ensure you are using the correct email associated with your USN.`
+  //     )
+  //   );
+  // }
   // Password validation
   if (!checkPassword(password)) {
     return next(
@@ -40,11 +55,16 @@ export const signup = async (req, res, next) => {
       )
     );
   }
-
-  // Check if user already exists
-  const existingUser = await User.findOne({ email });
+  if (password !== confirmPassword) {
+    return next(errorHandler(404, "passwords are not matching"));
+  }
+  // Check if user already exists with this email or username
+  const existingUser = await User.findOne({ $or: [{ email }, { name }] });
   if (existingUser) {
-    return next(errorHandler(400, "User with this email already exists"));
+    if (existingUser.email === email)
+      return next(errorHandler(400, "User with this email already exists"));
+    if (existingUser.name === name)
+      return next(errorHandler(400, "Username is already taken"));
   }
 
   const hashedPassword = bcryptjs.hashSync(password, 10);
@@ -52,7 +72,9 @@ export const signup = async (req, res, next) => {
   try {
     const newUser = await User.create({
       name,
+      fullName,
       email,
+      // USN,
       password: hashedPassword,
       otp,
       otpExpiry: Date.now() + 10 * 60 * 1000, // OTP valid for 10 minutes
@@ -88,6 +110,10 @@ export const signin = async (req, res, next) => {
     // console.log(validUser);
     if (!validUser) {
       return next(errorHandler(400, "User not found"));
+    }
+    // Check if the user is verified
+    if (!validUser.isVerified) {
+      return next(errorHandler(400, "Please verify your email first"));
     }
     const validPassword = bcryptjs.compareSync(password, validUser.password);
     // console.log(validPassword);
@@ -227,13 +253,18 @@ export const resetPassword = async (req, res, next) => {
     console.log("User found:", user);
 
     if (!user) {
-      return next(errorHandler(404, "No user found or reset link has expired."));
+      return next(
+        errorHandler(404, "No user found or reset link has expired.")
+      );
     }
 
     // Check if new password matches old password
     if (bcryptjs.compareSync(req.body.password, user.password)) {
       return next(
-        errorHandler(404, "New password should not be the same as the old password.")
+        errorHandler(
+          404,
+          "New password should not be the same as the old password."
+        )
       );
     }
 
@@ -244,7 +275,10 @@ export const resetPassword = async (req, res, next) => {
       req.body.password.includes(user.email.split("@")[0])
     ) {
       return next(
-        errorHandler(404, "New password should not contain your username or email.")
+        errorHandler(
+          404,
+          "New password should not contain your username or email."
+        )
       );
     }
 
@@ -254,6 +288,7 @@ export const resetPassword = async (req, res, next) => {
     user.password = hashedPassword;
     user.passwordResetToken = undefined;
     user.passwordResetTokenExpire = undefined;
+    user.isVerified=true;
     await user.save();
 
     console.log("JWT secret:", process.env.JWT_SECRET);
@@ -268,13 +303,10 @@ export const resetPassword = async (req, res, next) => {
 
     console.log("Generated token:", token);
 
-    res
-      .status(200)
-      .cookie("access_token", token, { httpOnly: true })
-      .json({
-        status: "success",
-        data: user,
-      });
+    res.status(200).cookie("access_token", token, { httpOnly: true }).json({
+      status: "success",
+      data: user,
+    });
   } catch (err) {
     console.error("Error in resetPassword controller:", err);
     next(err);

@@ -9,6 +9,18 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    fullName: {
+      type: String,
+    },
+    linkedIn: {
+      type: String,
+    },
+    github: {
+      type: String,
+    },
+    // usn:{
+    //   type:String
+    // },
     email: {
       type: String,
       required: true,
@@ -27,9 +39,9 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    isModerator:{
-      type:Boolean,
-      default:false
+    isModerator: {
+      type: Boolean,
+      default: false,
     },
     isDeleted: {
       type: Boolean,

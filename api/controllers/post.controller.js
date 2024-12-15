@@ -447,6 +447,12 @@ export const getVerifiedAndunVerifiedPost = async (req, res, next) => {
       "profilePicture",
       "isVerified",
       "isDeleted",
+      "isAdmin",
+      "isModerator",
+      "fullName",
+      "email",
+      "linkedIn",
+      "github"
     ]);
     if (!post) return next(errorHandler(404, "No post is found"));
     // console.log("hi this is from getVerandUnver post :", post);

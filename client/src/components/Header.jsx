@@ -55,13 +55,27 @@ export default function Header() {
 
   return (
     <Navbar className="border-b-2 relative">
-      <Link
+      {/* <Link
         to={"/"}
         className="self-center whitespace-nowrap text-sm sm:text-xl font-semibold dark:text-white"
       >
-        <span className="py-1 text-2xl rounded-lg dark:text-white">code</span>
-        <span className="text-red-500 mx-1">Campus</span>
-      </Link>
+        <span className="py-1 text-2xl rounded-lg dark:text-white">ace</span>
+        <span className="text-blue-500 mx-1">Connect</span>
+      </Link> */}
+
+<Link
+  to="/"
+  className="self-center whitespace-nowrap text-sm sm:text-xl font-semibold dark:text-white flex items-center"
+>
+  <img src="/pen.png"></img>
+  <span className="py-1 text-2xl font-ace dark:text-white tracking-wide">
+    ace
+  </span>
+  <span className="text-blue-500 text-2xl font-connect font-bold ml-0">
+    Connect
+  </span>
+</Link>
+
 
       {/* Mobile Search Toggle */}
       <div className="flex items-center lg:hidden">

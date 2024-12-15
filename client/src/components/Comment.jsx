@@ -3,12 +3,14 @@ import moment from "moment";
 import { FaThumbsUp } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { Button, Textarea } from "flowbite-react";
+import UserProfileModal from "./UserProfileModal";
 
 export default function Comment({ comment, onLike, onEdit, onDelete }) {
   const [user, setUser] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(comment.content);
   const currentUser = useSelector((state) => state.user.currentUser);
+  const [showModel, setShowModel] = useState(false);
   console.log(comment);
   useEffect(() => {
     const getUser = async () => {
@@ -68,6 +70,8 @@ export default function Comment({ comment, onLike, onEdit, onDelete }) {
           className="w-10 h-10 rounded-full bg-gray-200"
           src={user.profilePicture}
           alt={user.name}
+          onClick={() => setShowModel(true)}
+          style={{ cursor: "pointer" }}
         ></img>
       </div>
       <div className="flex-1">
@@ -160,6 +164,12 @@ export default function Comment({ comment, onLike, onEdit, onDelete }) {
           </>
         )}
       </div>
+      {/* Reusable UserProfileModal component */}
+      <UserProfileModal
+        show={showModel}
+        onClose={() => setShowModel(false)}
+        user={user}
+      />
     </div>
   );
 }

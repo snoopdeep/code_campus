@@ -7,6 +7,7 @@ import Comment from "./Comment";
 import { useNavigate } from "react-router-dom";
 import { Modal } from "flowbite-react";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
+import UserProfileModal from "./UserProfileModal";
 
 export default function CommentSection({ postId }) {
   const { currentUser } = useSelector((state) => state.user);
@@ -281,6 +282,7 @@ export default function CommentSection({ postId }) {
             </div>
           </Modal.Body>
         </Modal>
+       
       </>
     </div>
   );

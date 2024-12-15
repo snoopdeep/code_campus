@@ -11,10 +11,16 @@ export default {
       colors: {
         feedbackFormCustomColor: "#FEDEC8",
         darkThemeColor: "#101214",
-        callToActionDarkTheme:"#29343D",
+        callToActionDarkTheme:"#101214",
         callToActionLightTheme:"#0A1828",
         callToActionTextTheme:"#BFA181",
         callToActionButtonTheme:"#178582"
+      },
+      fontFamily: {
+        // ace: ['"Poppins"', 'sans-serif'],
+        // connect: ['"Roboto"', 'sans-serif'],
+        ace: ['"Merriweather"', 'serif'],
+        connect: ['"Lato"', 'sans-serif'],
       },
     },
   },

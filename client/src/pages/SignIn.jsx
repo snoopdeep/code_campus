@@ -1,5 +1,5 @@
 import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   signInStart,
@@ -10,13 +10,15 @@ import { useDispatch, useSelector } from "react-redux";
 import OAuth from "../components/OAuth";
 
 export default function SignIn() {
-  const [formData, setFormData] = React.useState({
+  const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const { loading, error: errorMessage } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Reset error || after 5 seconds
   useEffect(() => {
@@ -84,27 +86,34 @@ export default function SignIn() {
       dispatch(signInFail(err.message || "An unexpected error occurred"));
     }
   };
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
   // console.log(formData);
   return (
     <div className="min-h-screen mt-20">
       <div className="flex p-3 max-w-3xl mx-auto flex-col md:flex-row md:items-center gap-5">
         {/* left */}
         <div className="flex-1">
-          <Link to={"/"} className="font-bold dark:text-white text-4xl">
-            <span className="px-2 py-1 bg-gradient-to-r from-orange-500 via-white-500 to-green-500 rounded-lg text-white">
-              code
+          <Link to={"/"} className="font-bold text-4xl">
+            <img src="/exit (1).png"></img>
+            <span className="px-0 py-1  rounded-lg text-text-gray-700 dark:white ">
+              ace
             </span>
-            Campus
+            <span className="text-blue-500">Connect</span>
           </Link>
-          <p className="text-sm mt-5">
+          {/* <p className="text-sm mt-5">
             This is a demo project. You can sign in to access the dashboard.
-          </p>
+          </p> */}
         </div>
 
         {/* right */}
         <div className="flex-1">
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-           
             <div>
               <Label value="Your email"></Label>
               <TextInput
@@ -116,14 +125,32 @@ export default function SignIn() {
               ></TextInput>
             </div>
             <div>
-              <Label value="Your password"></Label>
-              <TextInput
-                type="password"
-                placeholder="*******"
-                id="password"
-                value={formData.password}
-                onChange={handleChange}
-              ></TextInput>
+              <Label htmlFor="password" value="Your Password" />
+              <div style={{ position: "relative" }}>
+                <TextInput
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  id="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
             <Button
               gradientDuoTone={"purpleToPink"}

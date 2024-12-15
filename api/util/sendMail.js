@@ -6,7 +6,7 @@ export const sendMail = async (
   message,
   toAdmin = false
 ) => {
-  console.log("hello from sendMail");
+  console.log("hello from sendMail",email);
 
   const transporter = nodemailer.createTransport({
     service: "gmail",

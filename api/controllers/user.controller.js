@@ -2,21 +2,35 @@ import bcryptjs from "bcryptjs";
 import User from "../models/user.model.js";
 import { errorHandler } from "../util/error.js";
 import { sendMail } from "../util/sendMail.js";
+import crypto from "crypto";
 import Razorpay from "razorpay";
 
 function checkPassword(str) {
   var re = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
   return re.test(str);
 }
+const generateOTP = () => {
+  return crypto.randomInt(100000, 999999).toString();
+};
 export const updateUser = async (req, res, next) => {
+  console.log("hi from the update user", req.body);
   // check if the user id in the request is the same as the user id in the token
   if (req.params.userId !== req.user.id) {
     return next(errorHandler(401, "You are not allowed to update this user"));
   }
+  const {
+    name: userName,
+    fullName,
+    password,
+    email,
+    github,
+    linkedIn,
+    profilePicture,
+  } = req.body;
   // now check all the data in the request body
-  if (req.body.password) {
+  if (password) {
     // password should have at least 8 char includeing upper and lower case with digit and one special character
-    if (!checkPassword(req.body.password)) {
+    if (!checkPassword(password)) {
       return next(
         errorHandler(
           400,
@@ -26,47 +40,78 @@ export const updateUser = async (req, res, next) => {
     }
   }
   // if password is correct then encrypt it
-  if (req.body.password) {
-    console.log("Password:", req.body.password);
-    req.body.password = bcryptjs.hashSync(req.body.password, 10);
-  }
+  // let hashedPassword;
+  // if (password) {
+  //   console.log("Password:", password);
+  //   hashedPassword = bcryptjs.hashSync(password, 10);
+  // }
   // check username
-  if (req.body.name) {
-    if (req.body.name.length < 5 || req.body.name.length > 20) {
+  if (userName) {
+    if (userName.length < 5 || userName.length > 20) {
       return next(
         errorHandler(400, "Username should be between 5 and 20 characters long")
       );
     }
-    if (req.body.name.includes(" ")) {
+    if (userName.includes(" ")) {
       return next(errorHandler(400, "Username should not contain spaces"));
     }
-    if (req.body.name !== req.body.name.toLowerCase()) {
+    if (userName !== userName.toLowerCase()) {
       return next(errorHandler(400, "Username should be in lowercase"));
     }
-    if (req.body.name.match(/[^a-z0-9]/)) {
+    if (userName.match(/[^a-z0-9]/)) {
       return next(
         errorHandler(400, "Username should contain only letters and numbers")
       );
     }
+    if (userName) {
+      const existingUserByUsername = await User.findOne({
+        name: userName,
+        _id: { $ne: req.params.userId },
+      });
+      if (existingUserByUsername) {
+        return next(errorHandler(400, "Username is already taken"));
+      }
+    }
+    if (email) {
+      const existingUserByEmail = await User.findOne({
+        email,
+        _id: { $ne: req.params.userId },
+      });
+      if (existingUserByEmail) {
+        return next(errorHandler(400, "Email is already in use"));
+      }
+    }
   }
   try {
-    const upadatedUser = await User.findByIdAndUpdate(
+    const otp = generateOTP();
+    if (password) password = bcryptjs.hashSync(password, 10);
+    const updatedUser = await User.findByIdAndUpdate(
       req.params.userId,
       {
         $set: {
-          name: req.body.username,
-          email: req.body.email,
-          profilePicture: req.body.profilePicture,
-          password: req.body.password,
+          name: userName,
+          fullName,
+          email,
+          profilePicture,
+          password,
+          github,
+          linkedIn,
+          profilePicture,
+          otp,
+          otpExpiry: Date.now() + 10 * 60 * 1000, // OTP valid for 10 minutes
         },
       },
       { new: true }
     );
-    console.log("updated user", upadatedUser);
-    // await upadatedUser.save();
+    console.log(updatedUser);
+    await sendMail(updatedUser.email, "otp", otp);
+    // unverify the user
+    updatedUser.isVerified = false;
+    console.log("updated user", updatedUser);
+    await updatedUser.save();
+    updatedUser.password = undefined;
     // seperate the password from the user object
-    upadatedUser.password = undefined;
-    res.status(200).json(upadatedUser);
+    res.status(200).json(updatedUser);
   } catch (err) {
     next(err);
   }
@@ -106,7 +151,7 @@ export const deleteUser = async (req, res, next) => {
     userToDelete.isAdmin = false;
     userToDelete.isDeleted = true;
     userToDelete.isVerified = false;
-    userToDelete.isModerator=false;
+    userToDelete.isModerator = false;
     await userToDelete.save({ validateBeforeSave: false });
     // await User.findByIdAndDelete(userIdToDelete);
     res.status(200).json({ message: "User has been deleted" });
@@ -179,7 +224,7 @@ export const getUser = async (req, res, next) => {
     }
     // change the name of deleted user
     if (user?.isDeleted) user.name = "[Deleted]";
-    
+
     const { password, ...rest } = user._doc;
     res.status(200).json({
       status: "success",
@@ -319,7 +364,7 @@ export const paymentSuccess = async (req, res, next) => {
         
         <h3>Donation Details:</h3>
         <ul>
-          <li><strong>Amount:</strong> INR ${amount/100}</li>
+          <li><strong>Amount:</strong> INR ${amount / 100}</li>
           <li><strong>Payment ID:</strong> ${payment_id}</li>
           <li><strong>Order ID:</strong> ${order_id}</li>
           <li><strong>Date:</strong> ${new Date().toLocaleDateString()}</li>

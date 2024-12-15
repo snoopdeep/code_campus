@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Button, Spinner } from "flowbite-react";
+import { Button, Spinner, Modal } from "flowbite-react";
 import CallToAction from "../components/CallToAction";
 import CommentSection from "../components/CommentSection";
 import PostCard from "../components/PostCard";
 import DOMPurify from "dompurify";
 import hljs from "highlight.js";
 import "highlight.js/styles/github.css";
+import UserProfileModal from "../components/UserProfileModal";
 // import '../styles/custom-highlight.css'; // Correct relative path
 // import "highlight.js/styles/monokai.css";
 
@@ -16,6 +17,8 @@ export default function PostPage() {
   const [error, setError] = useState(null);
   const [post, setPost] = useState(null);
   const [recentPosts, setRecentPosts] = useState(null);
+  const [showModel, setShowModel] = useState(false);
+
   console.log("post slug is ", postSlug);
 
   useEffect(() => {
@@ -148,6 +151,8 @@ export default function PostPage() {
             className="w-9 h-9 rounded-full bg-gray-200 mr-3"
             src={post.userId.profilePicture}
             alt={post.userId.name}
+            onClick={() => setShowModel(true)} // Open modal when profile picture is clicked
+            style={{ cursor: 'pointer' }}
           />
         )}
         <div className="flex flex-col">
@@ -237,6 +242,12 @@ export default function PostPage() {
             recentPosts.map((post) => <PostCard key={post._id} post={post} />)}
         </div>
       </div>
+      {/* Reusable UserProfileModal component */}
+      <UserProfileModal
+        show={showModel}
+        onClose={() => setShowModel(false)}
+        user={post.userId}
+      />
     </main>
   );
 }

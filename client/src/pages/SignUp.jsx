@@ -1,34 +1,39 @@
 import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import OAuth from "../components/OAuth";
 
 export default function SignUp() {
   // State to manage form data
-  const [formData, setFormData] = React.useState({
+  const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
+    confirmPassword: "",
+    fullName: "",
+    USN: "",
   });
 
   // State to manage OTP input
-  const [otp, setOtp] = React.useState("");
+  const [otp, setOtp] = useState("");
 
   // State to toggle between signup form and OTP verification
-  const [isOtpSent, setIsOtpSent] = React.useState(false);
+  const [isOtpSent, setIsOtpSent] = useState(false);
 
   // State to manage messages and loading state
-  const [errorMessage, setErrorMessage] = React.useState(null);
-  const [successMessage, setSuccessMessage] = React.useState(null);
-  const [loading, setLoading] = React.useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const [verifiedEmail, setVerifiedEmail] = React.useState("");
+  const [verifiedEmail, setVerifiedEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigate = useNavigate();
 
   // Handle input changes for signup form
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value.trim() });
+    setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
   // Handle input changes for OTP field
@@ -41,38 +46,71 @@ export default function SignUp() {
     if (errorMessage) {
       setFormData({
         name: "",
+        fullName: "",
         email: "",
+        USN: "",
         password: "",
+        confirmPassword: "",
       });
       const timer = setTimeout(() => {
         setErrorMessage(null);
-      }, 7000);
+      }, 5000);
       return () => clearTimeout(timer);
     }
 
     if (successMessage) {
       const timer = setTimeout(() => {
         setSuccessMessage(null);
-      }, 7000);
+      }, 5000);
       return () => clearTimeout(timer);
     }
   }, [errorMessage, successMessage]);
 
+  // function to check the usn allign with the email address..
+  // function isUSNAligned(usn, email) {
+  //   const emailPrefix = email.split("@")[0];
+
+  //   return usn.toLowerCase() === emailPrefix.toLowerCase();
+  // }
+  // check password compitability
+  function checkPassword(str) {
+    var re = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+    return re.test(str);
+  }
   // Handle Signup Form Submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     // Validate form inputs
     if (
       !formData.name ||
+      !formData.fullName ||
       !formData.email ||
+      // !formData.USN ||
       !formData.password ||
+      !formData.confirmPassword ||
       formData.name === " " ||
+      formData.fullName === " " ||
       formData.email === " " ||
-      formData.password === " "
+      // formData.USN === " " ||
+      formData.password === " " ||
+      formData.confirmPassword === " "
     ) {
       return setErrorMessage("Please fill all the fields");
     }
-
+    // if (!isUSNAligned(formData.USN, formData.email)) {
+    //   return setErrorMessage(
+    //     `The provided USN "${formData.USN}" does not match the email "${formData.email}". ` +
+    //       `Please ensure you are using the correct email associated with your USN.`
+    //   );
+    // }
+    if (!checkPassword(formData.password)) {
+      return setErrorMessage(
+        "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character."
+      );
+    }
+    if (formData.password !== formData.confirmPassword) {
+      return setErrorMessage("passwords does not matched.");
+    }
     try {
       setLoading(true);
       setErrorMessage(null);
@@ -201,20 +239,43 @@ export default function SignUp() {
       return setErrorMessage(err.message || "An unexpected error occurred");
     }
   };
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
   return (
     <div className="min-h-screen mt-20">
       <div className="flex p-3 max-w-3xl mx-auto flex-col md:flex-row md:items-center gap-5">
         {/* Left Side */}
         <div className="flex-1">
           <Link to={"/"} className="font-bold dark:text-white text-4xl">
-            <span className="px-2 py-1 bg-gradient-to-r from-orange-500 via-white-500 to-green-500 rounded-lg text-white">
-              code
+            <img src="/user (1).png"></img>
+            <span className="px-0 py-1 rounded-lg text-text-gray-700 dark:white">
+              ace
             </span>
-            Campus
+            <span className="text-blue-500">Connect</span>
           </Link>
           <p className="text-sm mt-5">
-            This is a demo project. You can sign up to access the dashboard.
+            Password must be at least{" "}
+            <span className="font-semibold">8 characters</span> long and include
+            at least:
+            <ul className="list-inside list-disc mt-2 text-sm">
+              <li className="text-gray-700 dark:text-gray-200">
+                One <span className="font-semibold">uppercase letter</span>
+              </li>
+              <li className="text-gray-700 dark:text-gray-200">
+                One <span className="font-semibold">lowercase letter</span>
+              </li>
+              <li className="text-gray-700 dark:text-gray-200">
+                One <span className="font-semibold">digit</span>
+              </li>
+              <li className="text-gray-700 dark:text-gray-200">
+                One <span className="font-semibold">special character</span>
+              </li>
+            </ul>
           </p>
         </div>
 
@@ -223,6 +284,19 @@ export default function SignUp() {
           {!isOtpSent ? (
             // Signup Form
             <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+              <div>
+                {/* 1: FullName */}
+                <Label htmlFor="fullName" value="Your Full Name"></Label>
+                <TextInput
+                  type="text"
+                  placeholder="Full Name"
+                  id="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  required
+                ></TextInput>
+              </div>
+              {/* 2: username */}
               <div>
                 <Label htmlFor="name" value="Your Username" />
                 <TextInput
@@ -245,16 +319,71 @@ export default function SignUp() {
                   required
                 />
               </div>
-              <div>
-                <Label htmlFor="password" value="Your Password" />
+              {/* <div>
+                <Label htmlFor="USN" value="Your USN"></Label>
                 <TextInput
-                  type="password"
-                  placeholder="Password"
-                  id="password"
-                  value={formData.password}
+                  type="text"
+                  placeholder="USN"
+                  value={formData.USN}
                   onChange={handleChange}
                   required
-                />
+                ></TextInput>
+              </div> */}
+              <div>
+                <Label htmlFor="password" value="Your Password" />
+                <div style={{ position: "relative" }}>
+                  <TextInput
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
+                    id="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    style={{
+                      position: "absolute",
+                      right: "10px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="confirmPassword" value="Confirm Password" />
+                <div style={{ position: "relative" }}>
+                  <TextInput
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm Password"
+                    id="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={toggleConfirmPasswordVisibility}
+                    style={{
+                      position: "absolute",
+                      right: "10px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {showConfirmPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
               </div>
               <Button
                 gradientDuoTone={"purpleToPink"}

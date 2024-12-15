@@ -37,7 +37,7 @@ export default function Home() {
         {/* Left Section (60%) */}
         <div className="lg:w-3/5 flex flex-col justify-center text-center lg:text-left">
           <h1 className="text-3xl font-bold lg:text-5xl">
-            Welcome to CodeCampus
+            Welcome to <span className="text-blue-500">AceConnect</span>
           </h1>
           <p className="dark:text-gray-300 text-sm sm:text-base mt-4">
             A platform where students share their interview experiences, tips,
@@ -62,7 +62,12 @@ export default function Home() {
         {/* Right Section (40%) */}
         <div className="lg:w-2/5 flex justify-center items-center mt-6 lg:mt-0">
           <img
-            src="/post.gif"
+            // src="/meeting.png"
+            // src="/programming-language.png"
+            // src="/interview.png"
+            // src="/interview (1).png"
+            // src="/coding.png"
+            src="/code (1).png"
             alt="CodeCampus Illustration"
             className="w-3/4 sm:w-2/3 lg:w-full h-auto rounded-lg shadow-lg"
             onClick={handleImageClick}

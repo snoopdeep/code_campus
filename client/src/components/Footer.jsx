@@ -7,14 +7,26 @@ export default function FooterCom() {
       <div className='w-full max-w-7xl mx-auto'>
         <div className='grid w-full justify-between sm:flex md:grid-cols-1'>
           <div className='mt-5'>
-            <Link
+            {/* <Link
               to='/'
               className='self-center whitespace-nowrap text-lg sm:text-xl font-semibold dark:text-white'
             >
-              <span className='px-1 py-1  rounded-lg text-red-500'>
-                code
+              <span className='px-0 py-1  rounded-lg text-blue-500'>
+                ace
               </span>
-              Campus
+              Connect
+            </Link> */}
+            <Link
+              to="/"
+              className="self-center whitespace-nowrap text-sm sm:text-xl font-semibold dark:text-white flex items-center"
+            >
+              <img src="/pen.png"></img>
+              <span className="py-1 text-2xl font-ace dark:text-white tracking-wide">
+                ace
+              </span>
+              <span className="text-blue-500 text-2xl font-connect font-bold ml-0">
+                Connect
+              </span>
             </Link>
           </div>
           <div className='grid grid-cols-2 gap-8 mt-4 sm:grid-cols-3 sm:gap-6'>
