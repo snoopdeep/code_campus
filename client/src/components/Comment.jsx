@@ -69,7 +69,7 @@ export default function Comment({ comment, onLike, onEdit, onDelete }) {
         <img
           className="w-10 h-10 rounded-full bg-gray-200"
           src={user.profilePicture}
-          alt={user.name}
+          alt={user.userName}
           onClick={() => setShowModel(true)}
           style={{ cursor: "pointer" }}
         ></img>
@@ -85,7 +85,7 @@ export default function Comment({ comment, onLike, onEdit, onDelete }) {
                 : "font-bold mr-1 text-xs truncate"
             }
           >
-            {user ? `@${user.name}` : `anonymous user`}
+            {user ? `@${user.userName}` : `anonymous user`}
           </span>
           <span className="text-gray-500 text-xs">
             {moment(comment.createdAt).fromNow()}
@@ -120,7 +120,7 @@ export default function Comment({ comment, onLike, onEdit, onDelete }) {
           </>
         ) : (
           <>
-            <p className="text-gray-500 mb-2">{comment.content}</p>
+            <p className="text-gray-700 dark:text-gray-400 mb-2">{comment.content}</p>
             <div className="flex items-center pt-2 text-xs border-t dark:border-gray-700 max-w-fit gap-2">
               <button
                 className={

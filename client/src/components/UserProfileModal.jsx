@@ -1,7 +1,9 @@
 import React from "react";
 import { Modal, Button } from "flowbite-react";
+import {FaLinkedin,FaGithub } from 'react-icons/fa';
 
 const UserProfileModal = ({ show, onClose, user }) => {
+  console.log('this is userProModel :',user);
   return (
     <Modal show={show} onClose={onClose} popup size={"md"}>
       <Modal.Header />
@@ -13,11 +15,11 @@ const UserProfileModal = ({ show, onClose, user }) => {
             className="h-24 w-24 rounded-full mb-4 mx-auto"
           />
           <h3 className="mb-2 text-lg font-semibold text-gray-500 dark:text-gray-400">
-            {user.name} ({user.fullName})
+            {user.userName} ({user.fullName})
           </h3>
-          <p className="mb-3 text-sm text-gray-400 dark:text-gray-300">
+          {/* <p className="mb-3 text-sm text-gray-400 dark:text-gray-300">
             Email: {user.email}
-          </p>
+          </p> */}
           <div className="flex justify-center gap-4 mb-4">
             {user.github && (
               <a
@@ -26,25 +28,26 @@ const UserProfileModal = ({ show, onClose, user }) => {
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:text-blue-800"
               >
-                GitHub
+                <FaGithub />
               </a>
             )}
             {user.linkedIn && (
+              
               <a
                 href={user.linkedIn}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:text-blue-800"
               >
-                LinkedIn
+                <FaLinkedin />
               </a>
             )}
           </div>
-          <div className="flex justify-center gap-4">
+          {/* <div className="flex justify-center gap-4">
             <Button color={"gray"} onClick={onClose} className="ml-2">
               Close
             </Button>
-          </div>
+          </div> */}
         </div>
       </Modal.Body>
     </Modal>

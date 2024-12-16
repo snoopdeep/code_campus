@@ -159,7 +159,7 @@ export default function DashboardComp() {
                         className="w-10 h-10 rounded-full bg-gray-500"
                       />
                     </Table.Cell>
-                    <Table.Cell>{user.name}</Table.Cell>
+                    <Table.Cell>{user.userName}</Table.Cell>
                   </Table.Row>
                 </Table.Body>
               ))}

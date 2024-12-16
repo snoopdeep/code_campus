@@ -150,7 +150,7 @@ export default function PostPage() {
           <img
             className="w-9 h-9 rounded-full bg-gray-200 mr-3"
             src={post.userId.profilePicture}
-            alt={post.userId.name}
+            alt={post.userId.userName}
             onClick={() => setShowModel(true)} // Open modal when profile picture is clicked
             style={{ cursor: 'pointer' }}
           />
@@ -165,7 +165,7 @@ export default function PostPage() {
                 : "font-bold text-xs truncate"
             }
           >
-            {post?.userId ? `@${post.userId.name}` : `[Deleted]`}
+            {post?.userId ? `@${post.userId.userName}` : `[Deleted]`}
           </span>
           <div className="flex space-x-2 text-gray-600 text-xs mt-1">
             <span>

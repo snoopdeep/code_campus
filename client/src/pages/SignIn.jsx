@@ -8,6 +8,7 @@ import {
 } from "../redux/user/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import OAuth from "../components/OAuth";
+import { BiShow,BiHide } from "react-icons/bi";
 
 export default function SignIn() {
   const [formData, setFormData] = useState({
@@ -99,7 +100,7 @@ export default function SignIn() {
       <div className="flex p-3 max-w-3xl mx-auto flex-col md:flex-row md:items-center gap-5">
         {/* left */}
         <div className="flex-1">
-          <Link to={"/"} className="font-bold text-4xl">
+          <Link to={"#"} className="font-bold text-4xl">
             <img src="/exit (1).png"></img>
             <span className="px-0 py-1  rounded-lg text-text-gray-700 dark:white ">
               ace
@@ -148,12 +149,13 @@ export default function SignIn() {
                     cursor: "pointer",
                   }}
                 >
-                  {showPassword ? "Hide" : "Show"}
+                  {showPassword ? <BiHide/> : <BiShow />}
                 </button>
               </div>
             </div>
             <Button
-              gradientDuoTone={"purpleToPink"}
+              // gradientDuoTone={"purpleToPink"}
+              className="bg-red-500 dark:bg-red-500 "
               type="submit"
               disabled={loading}
             >

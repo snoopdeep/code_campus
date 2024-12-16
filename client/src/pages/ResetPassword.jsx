@@ -4,6 +4,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import OAuth from "../components/OAuth";
 import { useDispatch } from "react-redux";
 import { signInSuccess } from "../redux/user/userSlice";
+import { BiShow,BiHide } from "react-icons/bi";
+
 
 export default function ResetPassword() {
   const { resetToken } = useParams();
@@ -14,8 +16,10 @@ export default function ResetPassword() {
   const [errorMessage, setErrorMessage] = useState(null);
   const [resetPasswordSuccess, setResetPasswordSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
-  const dispatch= useDispatch();
+  const dispatch = useDispatch();
 
   // Handle form input changes
   const handleChange = (e) => {
@@ -61,7 +65,7 @@ export default function ResetPassword() {
       if (res.ok && data.status === "success") {
         setResetPasswordSuccess("Password changed successfully.");
         setFormData({ password: "", confirmPassword: "" }); // Reset form fields
-        dispatch(signInSuccess(data.data)); 
+        dispatch(signInSuccess(data.data));
       } else {
         // Handle server-side errors
         setErrorMessage(data.message || "Something went wrong!");
@@ -97,19 +101,28 @@ export default function ResetPassword() {
     }
   }, [errorMessage]);
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
   return (
     <div className="min-h-screen mt-20">
       <div className="flex p-3 max-w-3xl mx-auto flex-col md:flex-row md:items-center gap-5">
         {/* Left Section */}
         <div className="flex-1">
-          <Link to="/" className="font-bold dark:text-white text-4xl">
-            <span className="px-2 py-1 bg-gradient-to-r from-orange-500 via-white-500 to-green-500 rounded-lg text-white">
-              code
+          <Link to={"#"} className="font-bold dark:text-white text-4xl">
+            <img src="/reset-password.png" alt="Reset Password Icon" />
+            <span className="px-0 py-1 rounded-lg text-gray-700 dark:text-white">
+              ace
             </span>
-            Campus
+            <span className="text-blue-500">Connect</span>
           </Link>
-          <p className="text-sm mt-5">
-            This is a demo project. You can sign in to access the dashboard.
+          <p className="text-sm text-gray-700 dark:text-gray-200 mt-5">
+            Please ensure your new password is different from your previous
+            password.
           </p>
         </div>
 
@@ -117,29 +130,63 @@ export default function ResetPassword() {
         <div className="flex-1">
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <div>
-              <Label htmlFor="password">New Password</Label>
-              <TextInput
-                type="password"
-                placeholder="********"
-                id="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
+              <Label htmlFor="password" value="Your Password" />
+              <div style={{ position: "relative" }}>
+                <TextInput
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  id="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  {showPassword ? <BiHide /> : <BiShow />}
+                </button>
+              </div>
             </div>
             <div>
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <TextInput
-                type="password"
-                placeholder="********"
-                id="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-              />
+              <Label htmlFor="confirmPassword" value="Confirm Password" />
+              <div style={{ position: "relative" }}>
+                <TextInput
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm Password"
+                  id="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={toggleConfirmPasswordVisibility}
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  {showConfirmPassword ? <BiHide /> : <BiShow />}
+                </button>
+              </div>
             </div>
             <Button
-              gradientDuoTone="purpleToPink"
+              className="bg-red-500 dark:bg-red-500  text-white font-bold py-2 px-4 rounded"
               type="submit"
               disabled={loading}
             >

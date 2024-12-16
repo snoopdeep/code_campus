@@ -152,7 +152,7 @@ export default function Header() {
                     : "block text-sm"
                 }
               >
-                @{currentUser.name}
+                @{currentUser.userName}
               </span>
               <span
                 className={

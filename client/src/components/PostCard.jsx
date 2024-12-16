@@ -30,7 +30,7 @@ export default function PostCard({ post }) {
                   : "text-sm font-medium"
               }
             >
-              {post.userId.name}
+              {post.userId.userName}
             </p>
           </div>
           <span className="italic text-sm text-gray-600">{post.category}</span>

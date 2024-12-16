@@ -4,6 +4,11 @@ import { errorHandler } from "../util/error.js";
 import { sendMail } from "../util/sendMail.js";
 import crypto from "crypto";
 import Razorpay from "razorpay";
+import fs from "fs";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
+// Get the directory name from the current module URL
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 function checkPassword(str) {
   var re = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
@@ -19,7 +24,7 @@ export const updateUser = async (req, res, next) => {
     return next(errorHandler(401, "You are not allowed to update this user"));
   }
   const {
-    name: userName,
+    userName,
     fullName,
     password,
     email,
@@ -28,8 +33,10 @@ export const updateUser = async (req, res, next) => {
     profilePicture,
   } = req.body;
   // now check all the data in the request body
+  if (!req.body) {
+    return next(errorHandler(400, "nothing to update"));
+  }
   if (password) {
-    // password should have at least 8 char includeing upper and lower case with digit and one special character
     if (!checkPassword(password)) {
       return next(
         errorHandler(
@@ -39,12 +46,21 @@ export const updateUser = async (req, res, next) => {
       );
     }
   }
-  // if password is correct then encrypt it
-  // let hashedPassword;
-  // if (password) {
-  //   console.log("Password:", password);
-  //   hashedPassword = bcryptjs.hashSync(password, 10);
-  // }
+  // check if the password is same as old passoword
+  if (password) {
+    const currentUser = await User.findById(req.user.id);
+    if (currentUser) {
+      if (bcryptjs.compareSync(password, currentUser.password)) {
+        return next(
+          errorHandler(
+            400,
+            "New password should not be the same as the old password."
+          )
+        );
+      }
+    }
+  }
+
   // check username
   if (userName) {
     if (userName.length < 5 || userName.length > 20) {
@@ -52,6 +68,7 @@ export const updateUser = async (req, res, next) => {
         errorHandler(400, "Username should be between 5 and 20 characters long")
       );
     }
+    console.log("userName is :", userName);
     if (userName.includes(" ")) {
       return next(errorHandler(400, "Username should not contain spaces"));
     }
@@ -63,48 +80,74 @@ export const updateUser = async (req, res, next) => {
         errorHandler(400, "Username should contain only letters and numbers")
       );
     }
-    if (userName) {
-      const existingUserByUsername = await User.findOne({
-        name: userName,
-        _id: { $ne: req.params.userId },
-      });
-      if (existingUserByUsername) {
-        return next(errorHandler(400, "Username is already taken"));
-      }
+
+    const existingUserByUsername = await User.findOne({
+      userName,
+      _id: { $ne: req.params.userId },
+    });
+    if (existingUserByUsername) {
+      return next(errorHandler(400, "Username is already taken"));
     }
-    if (email) {
-      const existingUserByEmail = await User.findOne({
-        email,
-        _id: { $ne: req.params.userId },
-      });
-      if (existingUserByEmail) {
-        return next(errorHandler(400, "Email is already in use"));
-      }
+  }
+  console.log("email is :", email);
+  if (email) {
+    const existingUserByEmail = await User.findOne({
+      email,
+      _id: { $ne: req.params.userId },
+    });
+    console.log("existingUserByEmail is :", existingUserByEmail);
+    if (existingUserByEmail) {
+      return next(errorHandler(400, "Email is already in use"));
     }
   }
   try {
     const otp = generateOTP();
-    if (password) password = bcryptjs.hashSync(password, 10);
+    let hashedPassword;
+    if (password) hashedPassword = bcryptjs.hashSync(password, 10);
+    // updating only those fields which are present in req.body
+    const updateFields = {};
+    const allowedFields = [
+      "userName",
+      "fullName",
+      "email",
+      "password",
+      "linkedIn",
+      "github",
+      "profilePicture",
+    ];
+
+    for (const [key, value] of Object.entries(req.body)) {
+      if (value !== undefined && allowedFields.includes(key)) {
+        if (key === "password") updateFields[key] = hashedPassword;
+        else updateFields[key] = value;
+      }
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       req.params.userId,
       {
         $set: {
-          name: userName,
-          fullName,
-          email,
-          profilePicture,
-          password,
-          github,
-          linkedIn,
-          profilePicture,
+          ...updateFields,
           otp,
-          otpExpiry: Date.now() + 10 * 60 * 1000, // OTP valid for 10 minutes
+          otpExpiry: Date.now() + 10 * 60 * 1000,
         },
       },
-      { new: true }
+      { new: true } // Return the updated document
     );
-    console.log(updatedUser);
-    await sendMail(updatedUser.email, "otp", otp);
+
+    const templatePath = path.join(
+      __dirname,
+      "..",
+      "util",
+      "emailTemplates",
+      "userUpdateOTP.html"
+    );
+    console.log(templatePath);
+    const emailTemplates = fs.readFileSync(templatePath, "utf-8");
+    const message = emailTemplates
+      .replace("{{fullName}}", updatedUser.fullName)
+      .replace("{{otp}}", otp);
+    await sendMail(updatedUser.email, "otpUpdate", message);
     // unverify the user
     updatedUser.isVerified = false;
     console.log("updated user", updatedUser);
@@ -244,49 +287,31 @@ export const postFeedback = async (req, res, next) => {
 
     const feedbackData = req.body;
 
-    // Construct the HTML content for the email
-    const feedbackEmail = `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: auto; background-color: #f4f4f4; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-        <div style="background-color: #007bff; color: white; text-align: center; padding: 10px 0; border-radius: 10px 10px 0 0;">
-          <h2>New Feedback Submitted on CodeCampus</h2>
-        </div>
-        <div style="padding: 20px;">
-          <p><strong>User Information:</strong></p>
-          <p>
-            <strong>Name:</strong> ${feedbackData.user.name}<br>
-            <strong>Email:</strong> <a href="mailto:${
-              feedbackData.user.email
-            }">${feedbackData.user.email}</a><br>
-            <strong>Profile Picture:</strong> <a href="${
-              feedbackData.user.profilePicture
-            }">View Profile Picture</a><br>
-            <strong>Account Created At:</strong> ${new Date(
-              feedbackData.user.createdAt
-            ).toLocaleString()}<br>
-            <strong>Last Updated:</strong> ${new Date(
-              feedbackData.user.updatedAt
-            ).toLocaleString()}
-          </p>
-          <hr>
-          <p><strong>Feedback Details:</strong></p>
-          <p>
-            <strong>Overall Rating:</strong> ${feedbackData.rating}/5<br>
-            <strong>Content Quality Rating:</strong> ${
-              feedbackData.contentRating
-            }/5<br>
-            <strong>Feedback:</strong> ${feedbackData.feedback}<br>
-            <strong>Suggestions for Improvement:</strong> ${
-              feedbackData.suggestions
-            }
-          </p>
-        </div>
-        <div style="text-align: center; margin-top: 20px; font-size: 0.9em; color: #777;">
-          Please review this feedback and take any necessary actions to enhance the platform experience.<br><br>
-          Thank you, <br>
-          <strong>CodeCampus Feedback System</strong>
-        </div>
-      </div>
-    `;
+    const templatePath = path.join(
+      __dirname,
+      "..",
+      "util",
+      "emailTemplates",
+      "feedbackEmailMessage.html"
+    );
+    const htmlContent = fs.readFileSync(templatePath, "utf-8");
+    
+    const feedbackEmail = htmlContent
+      .replace("{{fullName}}", feedbackData.user.fullName)
+      .replace("{{email}}", feedbackData.user.email)
+      .replace("{{profilePicture}}", feedbackData.user.profilePicture)
+      .replace(
+        "{{createdAt}}",
+        new Date(feedbackData.user.createdAt).toLocaleString()
+      )
+      .replace(
+        "{{updatedAt}}",
+        new Date(feedbackData.user.updatedAt).toLocaleString()
+      )
+      .replace("{{rating}}", feedbackData.rating)
+      .replace("{{contentRating}}", feedbackData.contentRating)
+      .replace("{{feedback}}", feedbackData.feedback)
+      .replace("{{suggestions}}", feedbackData.suggestions);
 
     // Send the feedback email to the admin
     await sendMail(feedbackData.user.email, "feedback", feedbackEmail, true);
@@ -355,25 +380,20 @@ export const paymentSuccess = async (req, res, next) => {
     );
     const paymentDetails = await razorpay.payments.fetch(payment_id);
 
-    // Define the HTML content
-    const htmlContent = `
-      <div style="font-family: Arial, sans-serif; color: #444;">
-        <h2 style="color: #1a73e8;">Thank You for Your Donation!</h2>
-        <p>Dear Donor,</p>
-        <p>We sincerely appreciate your generous contribution to <strong>CodeCampus</strong>. Your support helps us continue our mission.</p>
-        
-        <h3>Donation Details:</h3>
-        <ul>
-          <li><strong>Amount:</strong> INR ${amount / 100}</li>
-          <li><strong>Payment ID:</strong> ${payment_id}</li>
-          <li><strong>Order ID:</strong> ${order_id}</li>
-          <li><strong>Date:</strong> ${new Date().toLocaleDateString()}</li>
-        </ul>
+    const templatePath = path.join(
+      __dirname,
+      "..",
+      "util",
+      "emailTemplates",
+      "paymentSuccess.html"
+    );
+    const htmlContent = fs.readFileSync(templatePath, "utf-8");
+    htmlContent = htmlContent
+      .replace("{{amout}}", amount / 100)
+      .replace("{{payment_id}}", payment_id)
+      .replace("{{order_id}}", order_id)
+      .replace("{{date}}", new Date().toLocaleDateString());
 
-        <p>Thank you again for your support!</p>
-        <p>Warm regards,<br/><strong>The CodeCampus Team</strong></p>
-      </div>
-    `;
     await sendMail(email, "paymentSuccess", htmlContent);
     // Respond to the user
     res.status(200).json({

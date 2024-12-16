@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    .email-container {
+      font-family: Arial, sans-serif;
+      color: #333;
+      line-height: 1.6;
+    }
+    .header {
+      background-color: #4CAF50;
+      color: white;
+      text-align: center;
+      padding: 10px 0;
+    }
+    .content {
+      padding: 20px;
+      text-align: left;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.9em;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h1>Congratulations! Your Post is Live!</h1>
+    </div>
+    <div class="content">
+      <p>Dear {{fullName}},</p>
+      <p>We are excited to inform you that your post titled "<strong>{{title}}</strong>" has been approved and is now available on <strong>AceConnect</strong>!</p>
+      <p>Thank you for sharing valuable content with our community. Your post is now accessible to our users, and we’re confident it will make a positive impact.</p>
+      <p>You can view your post <a href={{postLiveLink}} style="color: #4CAF50; text-decoration: none;">here</a>.</p>
+      <p>If you have more experiences or insights to share, we encourage you to continue contributing to the platform.</p>
+      <p>Thank you for being an integral part of our community!</p>
+      <p>Best regards,<br/>The AceConnect Team</p>
+    </div>
+    <div class="footer">
+      <p>&copy; {{date}} CodeCampus. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

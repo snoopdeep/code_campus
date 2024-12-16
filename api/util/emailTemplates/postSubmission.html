@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            .email-container {
+              font-family: Arial, sans-serif;
+              color: #333;
+              line-height: 1.6;
+            }
+            .header {
+              background-color: #4CAF50;
+              color: white;
+              text-align: center;
+              padding: 10px 0;
+            }
+            .content {
+              padding: 20px;
+              text-align: left;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 20px;
+              font-size: 0.9em;
+              color: #777;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="email-container">
+            <div class="header">
+              <h1>Thank You for Your Contribution!</h1>
+            </div>
+            <div class="content">
+              <p>Dear {{fullName}},</p>
+              <p>Thank you for contributing to <strong>AceConnect</strong>. Your post titled "<strong>{{title}}</strong>" has been successfully submitted.</p>
+              <p>We appreciate your effort in sharing valuable content with our community. To ensure that all posts adhere to our platform's guidelines, your submission is currently under review by our moderators. Once approved, it will be published on the platform.</p>
+              <p>If you have any questions or concerns, feel free to reach out to us.</p>
+              <p>Thank you for being an integral part of our community!</p>
+              <p>Best regards,<br/>The AceConnect Team</p>
+            </div>
+            <div class="footer">
+              <p>&copy; {{date}} AceConnect. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>

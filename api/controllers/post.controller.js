@@ -2,10 +2,15 @@ import Post from "../models/post.model.js";
 import { errorHandler } from "../util/error.js";
 import User from "../models/user.model.js";
 import { sendMail } from "../util/sendMail.js";
+import fs from "fs";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
+// Get the directory name from the current module URL
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Create a new post
 export const create = async (req, res, next) => {
-  console.log('this is create post.jsx :',req.body);
+  console.log("this is create post.jsx :", req.body);
   if (!req.body.title || !req.body.content) {
     return res.status(400).json({ message: "Title and content are required" });
   }
@@ -28,56 +33,18 @@ export const create = async (req, res, next) => {
     // send mail to the user that ur post is under review
     const user = await User.findById(req.user.id);
     if (user) {
-      const message = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <style>
-            .email-container {
-              font-family: Arial, sans-serif;
-              color: #333;
-              line-height: 1.6;
-            }
-            .header {
-              background-color: #4CAF50;
-              color: white;
-              text-align: center;
-              padding: 10px 0;
-            }
-            .content {
-              padding: 20px;
-              text-align: left;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 20px;
-              font-size: 0.9em;
-              color: #777;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="email-container">
-            <div class="header">
-              <h1>Thank You for Your Contribution!</h1>
-            </div>
-            <div class="content">
-              <p>Dear ${user.name},</p>
-              <p>Thank you for contributing to <strong>CodeCampus</strong>. Your post titled "<strong>${
-                req.body.title
-              }</strong>" has been successfully submitted.</p>
-              <p>We appreciate your effort in sharing valuable content with our community. To ensure that all posts adhere to our platform's guidelines, your submission is currently under review by our moderators. Once approved, it will be published on the platform.</p>
-              <p>If you have any questions or concerns, feel free to reach out to us.</p>
-              <p>Thank you for being an integral part of our community!</p>
-              <p>Best regards,<br/>The CodeCampus Team</p>
-            </div>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} CodeCampus. All rights reserved.</p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `;
+      const templatePath = path.join(
+        __dirname,
+        "..",
+        "util",
+        "emailTemplates",
+        "postSubmission.html"
+      );
+      const htmlContent = fs.readFileSync(templatePath, "utf-8");
+      const message = htmlContent
+        .replace("{{fullName}}", user.fullName)
+        .replace("{{title}}", req.body.title)
+        .replace("{{date}}", new Date().getFullYear());
       await sendMail(user.email, "userPostVerification", message);
     }
     res.status(201).json(savedPost);
@@ -135,7 +102,7 @@ export const getposts = async (req, res, next) => {
       .skip(startIndex)
       .limit(limit)
       .populate("userId", [
-        "name",
+        "userName",
         "profilePicture",
         "isAdmin",
         "isDeleted",
@@ -218,7 +185,10 @@ export const getAllPosts = async (req, res, next) => {
       .sort({ updatedAt: sortDirection })
       .skip(startIndex)
       .limit(limit)
-      .populate("userId", "name profilePicture isAdmin isDeleted isModerator");
+      .populate(
+        "userId",
+        "userName profilePicture isAdmin isDeleted isModerator"
+      );
 
     // if user is deleted then change the name of it
     const posts = tempPosts.map((post) => {
@@ -294,7 +264,11 @@ export const updatePost = async (req, res, next) => {
   console.log(req.user);
 
   // Corrected logical condition: Use AND instead of OR
-  if (!req.user.isAdmin && req.user.id !== req.params.userId&&  !req.user.isModerator){  
+  if (
+    !req.user.isAdmin &&
+    req.user.id !== req.params.userId &&
+    !req.user.isModerator
+  ) {
     return res
       .status(403)
       .json({ message: "You are not allowed to update this post" });
@@ -307,7 +281,6 @@ export const updatePost = async (req, res, next) => {
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
-
 
     const updatedPost = await Post.findByIdAndUpdate(
       req.params.postId,
@@ -367,59 +340,20 @@ export const verifyPost = async (req, res, next) => {
     post.save();
     // send mail to the user that his/her post is now available
     console.log("this is verify post and post is :", post);
-    const message = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <style>
-            .email-container {
-              font-family: Arial, sans-serif;
-              color: #333;
-              line-height: 1.6;
-            }
-            .header {
-              background-color: #4CAF50;
-              color: white;
-              text-align: center;
-              padding: 10px 0;
-            }
-            .content {
-              padding: 20px;
-              text-align: left;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 20px;
-              font-size: 0.9em;
-              color: #777;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="email-container">
-            <div class="header">
-              <h1>Congratulations! Your Post is Live!</h1>
-            </div>
-            <div class="content">
-              <p>Dear ${post?.userId?.name},</p>
-              <p>We are excited to inform you that your post titled "<strong>${
-                post.title
-              }</strong>" has been approved and is now available on <strong>CodeCampus</strong>!</p>
-              <p>Thank you for sharing valuable content with our community. Your post is now accessible to our users, and we’re confident it will make a positive impact.</p>
-              <p>You can view your post <a href="https://localhost:3000/post/${
-                post.slug
-              }" style="color: #4CAF50; text-decoration: none;">here</a>.</p>
-              <p>If you have more experiences or insights to share, we encourage you to continue contributing to the platform.</p>
-              <p>Thank you for being an integral part of our community!</p>
-              <p>Best regards,<br/>The CodeCampus Team</p>
-            </div>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} CodeCampus. All rights reserved.</p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `;
+
+    const templatePath = path.join(
+      __dirname,
+      "..",
+      "util",
+      "emailTemplates",
+      "postVerificationConfirm.html"
+    );
+    const htmlContent = fs.readFileSync(templatePath, "utf-8");
+    const message = htmlContent
+      .replace("{{fullName}}", post?.userId?.fullName)
+      .replace("{{title}}", post.title)
+      .replace("{{postLiveLink}}", `https://localhost:3000/post/${post.slug}`)
+      .replace("{{date}}", new Date().getFullYear());
 
     await sendMail(post.userId.email, "postVerificationConfirmed", message);
 
@@ -443,7 +377,7 @@ export const getVerifiedAndunVerifiedPost = async (req, res, next) => {
     console.log({ slug });
     if (!slug) return next(errorHandler(404, "No post Slug"));
     const post = await Post.findOne({ slug }).populate("userId", [
-      "name",
+      "userName",
       "profilePicture",
       "isVerified",
       "isDeleted",
@@ -452,7 +386,7 @@ export const getVerifiedAndunVerifiedPost = async (req, res, next) => {
       "fullName",
       "email",
       "linkedIn",
-      "github"
+      "github",
     ]);
     if (!post) return next(errorHandler(404, "No post is found"));
     // console.log("hi this is from getVerandUnver post :", post);

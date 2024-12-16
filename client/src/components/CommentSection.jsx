@@ -174,7 +174,7 @@ export default function CommentSection({ postId }) {
             className="text-xs text-cyan-500 hover:underline"
             to={"/dashboard?tab=profile"}
           >
-            @{currentUser.name}
+            @{currentUser.userName}
           </Link>
         </div>
       ) : (
@@ -198,7 +198,7 @@ export default function CommentSection({ postId }) {
             value={comment}
           ></Textarea>
           <div className="flex justify-between items-center mt-5">
-            <p className="text-gray-500 text-xs">
+            <p className="text-gray-700 dark:text-gray-300 text-xs">
               {500 - comment.length} character remaining..
             </p>
             <Button
@@ -230,7 +230,7 @@ export default function CommentSection({ postId }) {
         ) : (
           <div className="text-sm my-5 flex items-center gap-1">
             <p>Comments</p>
-            <div className="border border-gray-50 py-1 px-2 rounded-sm ">
+            <div className="border border-gray-500 dark:border-gray-300 py-1 px-2 rounded-sm ">
               <p>{comments.length}</p>
             </div>
           </div>

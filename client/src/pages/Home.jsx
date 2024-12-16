@@ -53,7 +53,7 @@ export default function Home() {
           </Link>
           <button
             onClick={handleImageClick}
-            className="w-full sm:w-auto mt-6 px-3 py-2 bg-teal-400 text-white font-semibold text-lg rounded-lg hover:bg-teal-600 transition duration-200 ease-in-out"
+            className="w-full sm:w-auto mt-6 px-3 py-2 bg-teal-500 text-white font-semibold text-lg rounded-lg hover:bg-teal-600 transition duration-200 ease-in-out"
           >
             Create a Post
           </button>

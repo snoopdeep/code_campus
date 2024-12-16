@@ -6,7 +6,7 @@ export const sendMail = async (
   message,
   toAdmin = false
 ) => {
-  console.log("hello from sendMail",email);
+  console.log("hello from sendMail", email);
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -36,6 +36,15 @@ export const sendMail = async (
     case "postVerificationConfirmed":
       subject = "Congrats!!Post Verification Confirmed";
       break;
+    case "otpSignUp":
+      subject = "Your OTP for Signup Verification";
+      break;
+    case "password_reset":
+      subject = "Password Reset Request for Your AceConnect Account";
+      break;
+    case "otpUpdate":
+      subject = "AceConnect: Account Update Confirmation & OTP";
+      break;
     default:
       subject = "Notification from CodeCampus";
   }
@@ -46,14 +55,17 @@ export const sendMail = async (
     subject: subject,
   };
 
-  if (messageType === "otp" || messageType === "password_reset") {
+  if (messageType === "otp") {
     mailOptions.text =
       messageType === "otp" ? `Your OTP is: ${message}` : `${message}`;
   } else if (
     messageType === "feedback" ||
     messageType === "paymentSuccess" ||
     messageType === "userPostVerification" ||
-    messageType === "postVerificationConfirmed"
+    messageType === "postVerificationConfirmed" ||
+    messageType === "otpSignUp" ||
+    messageType === "password_reset" ||
+    messageType === "otpUpdate"
   ) {
     mailOptions.html = message; // Use HTML content for feedback
   } else {

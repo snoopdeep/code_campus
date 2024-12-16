@@ -19,16 +19,16 @@ function checkPassword(str) {
 //1: signup
 export const signup = async (req, res, next) => {
   console.log("Hello from signup controller ", " Request body:", req.body);
-  const { name, fullName, email,password, confirmPassword } = req.body; // USN, 
+  const { userName, fullName, email, password, confirmPassword } = req.body; // USN,
   if (
-    !name ||
     !fullName ||
+    !userName ||
     !email ||
     // !USN ||
     !password ||
     !confirmPassword ||
-    name.trim() === "" ||
     fullName.trim() === "" ||
+    userName.trim() === "" ||
     email.trim() === "" ||
     // USN.trim() === "" ||
     password.trim() === "" ||
@@ -36,16 +36,6 @@ export const signup = async (req, res, next) => {
   ) {
     return next(errorHandler(400, "All fields are required"));
   }
-  // checking usn and email compitability
-  // if (email.toLowerCase().split("@")[0] !== USN) {
-  //   return next(
-  //     errorHandler(
-  //       404,
-  //       `The provided USN ${USN} does not match the email ${email}. ` +
-  //         `Please ensure you are using the correct email associated with your USN.`
-  //     )
-  //   );
-  // }
   // Password validation
   if (!checkPassword(password)) {
     return next(
@@ -58,20 +48,44 @@ export const signup = async (req, res, next) => {
   if (password !== confirmPassword) {
     return next(errorHandler(404, "passwords are not matching"));
   }
-  // Check if user already exists with this email or username
-  const existingUser = await User.findOne({ $or: [{ email }, { name }] });
+  // Check if user already exists with this email or useruserName
+  const existingUser = await User.findOne({ $or: [{ email }, { userName }] });
   if (existingUser) {
+    // check if user is blocked by admin
+    if (existingUser.isUserBlocked) {
+      return next(
+        errorHandler(
+          403,
+          "Your account has been suspended due to policy violations. Contact support for assistance."
+        )
+      );
+    }
+    if (existingUser.isVerified) {
+      return next(
+        errorHandler(
+          400,
+          "An account with this email or User Name already exists but isn't verified. Reset your password to verify your account."
+        )
+      );
+    }
     if (existingUser.email === email)
-      return next(errorHandler(400, "User with this email already exists"));
-    if (existingUser.name === name)
-      return next(errorHandler(400, "Username is already taken"));
+      return next(
+        errorHandler(400, "User with this email already exists. Please log in.")
+      );
+    if (existingUser.userName === userName)
+      return next(
+        errorHandler(
+          400,
+          "This User Name is already taken, kindly try another."
+        )
+      );
   }
 
   const hashedPassword = bcryptjs.hashSync(password, 10);
   const otp = generateOTP();
   try {
     const newUser = await User.create({
-      name,
+      userName,
       fullName,
       email,
       // USN,
@@ -81,13 +95,73 @@ export const signup = async (req, res, next) => {
     });
     console.log("New User successfully created in database!");
     // await sendOTPEmail(email, otp);
-    await sendMail(email, "otp", otp);
+    const message = `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      text-align: center;
+    }
+    .header {
+      background-color: #007BFF;
+      color: #fff;
+      padding: 10px;
+      font-size: 1.5em;
+      border-radius: 6px 6px 0 0;
+    }
+    .content {
+      margin: 20px 0;
+    }
+    .otp {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #007BFF;
+    }
+    .footer {
+      margin-top: 20px;
+      font-size: 0.9em;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">AceConnect OTP Verification</div>
+    <div class="content">
+      <p>Hi <strong>${fullName}</strong>,</p>
+      <p>Thank you for signing up for AceConnect!</p>
+      <p>Your One-Time Password (OTP) for account verification is:</p>
+      <p class="otp">${otp}</p>
+      <p>This OTP is valid for the next 10 minutes. Please use it to complete your registration.</p>
+    </div>
+    <div class="footer">
+      <p>If you did not sign up for AceConnect, please ignore this email.</p>
+      <p>Thank you,<br>The AceConnect Team</p>
+    </div>
+  </div>
+</body>
+</html>
+`;
+    await sendMail(email, "otpSignUp", message);
     // Do not send the OTP back to the client for security reasons
     return res.status(201).json({
       message: "User created successfully. OTP sent to email.",
       user: {
         id: newUser._id,
-        name: newUser.name,
+        userName: newUser.userName,
         email: newUser.email,
       },
     });
@@ -111,9 +185,23 @@ export const signin = async (req, res, next) => {
     if (!validUser) {
       return next(errorHandler(400, "User not found"));
     }
+    // check if the user is blocked
+    if (validUser?.isUserBlocked) {
+      return next(
+        errorHandler(
+          403,
+          "Your account has been suspended due to policy violations. Contact support for assistance."
+        )
+      );
+    }
     // Check if the user is verified
     if (!validUser.isVerified) {
-      return next(errorHandler(400, "Please verify your email first"));
+      return next(
+        errorHandler(
+          400,
+          "Your account isn't verified. Reset Your Password to complete verification."
+        )
+      );
     }
     const validPassword = bcryptjs.compareSync(password, validUser.password);
     // console.log(validPassword);
@@ -149,6 +237,15 @@ export const google = async (req, res, next) => {
   try {
     const user = await User.findOne({ email });
     if (user) {
+      // check if user is blocked
+      if (user?.isUserBlocked) {
+        return next(
+          errorHandler(
+            403,
+            "Your account has been suspended due to policy violations. Contact support for assistance."
+          )
+        );
+      }
       const token = jwt.sign(
         { id: user._id, isAdmin: user.isAdmin, isModerator: user.isModerator },
         process.env.JWT_SECRET,
@@ -201,15 +298,91 @@ export const forgetPassword = async (req, res, next) => {
     if (!user) {
       return next(errorHandler(400, "No user is found."));
     }
+    // check if user is blocked
+    if (user?.isUserBlocked) {
+      return next(
+        errorHandler(
+          403,
+          "Your account has been suspended due to policy violations. Contact support for assistance."
+        )
+      );
+    }
     const resetToken = user.createResetToken();
 
     await user.save({ validateBeforeSave: false });
 
-    const urlString = `http://localhost:5173/reset-password/${resetToken}`;
-    await sendMail(userEmail, "password_reset", urlString);
+    const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
+
+    const message = `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      text-align: center;
+    }
+    .header {
+      background-color: #007BFF;
+      color: #fff;
+      padding: 10px;
+      font-size: 1.5em;
+      border-radius: 6px 6px 0 0;
+    }
+    .content {
+      margin: 20px 0;
+    }
+    .button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1em;
+      color: #fff;
+      background-color: #007BFF;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+    .footer {
+      margin-top: 20px;
+      font-size: 0.9em;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">Password Reset Request</div>
+    <div class="content">
+      <p>Hi <strong>${user.fullName}</strong>,</p>
+      <p>We received a request to reset your password for your AceConnect account.</p>
+      <p>If you made this request, please click the button below to reset your password:</p>
+      <a href="${resetLink}" class="button">Reset Password</a>
+      <p>If the button above doesn’t work, you can also copy and paste the following link into your browser:</p>
+      <p>${resetLink}</p>
+      <p>This link will expire in 10 minutes. If you didn’t request a password reset, please ignore this email or contact our support team for assistance.</p>
+    </div>
+    <div class="footer">
+      <p>Thank you,<br>The AceConnect Team</p>
+    </div>
+  </div>
+</body>
+</html>
+`;
+    await sendMail(userEmail, "password_reset", message);
     res.status(200).json({
       status: "success",
-      url: urlString,
+      url: resetLink,
       message: "password change link send successfully",
     });
   } catch (err) {
@@ -250,6 +423,15 @@ export const resetPassword = async (req, res, next) => {
       passwordResetTokenExpire: { $gt: Date.now() },
     });
 
+    // check if user is blocked
+    if (user?.isUserBlocked) {
+      return next(
+        errorHandler(
+          403,
+          "Your account has been suspended due to policy violations. Contact support for assistance."
+        )
+      );
+    }
     console.log("User found:", user);
 
     if (!user) {
@@ -288,10 +470,8 @@ export const resetPassword = async (req, res, next) => {
     user.password = hashedPassword;
     user.passwordResetToken = undefined;
     user.passwordResetTokenExpire = undefined;
-    user.isVerified=true;
+    user.isVerified = true;
     await user.save();
-
-    console.log("JWT secret:", process.env.JWT_SECRET);
 
     const token = jwt.sign(
       { id: user._id, isAdmin: user.isAdmin, isModerator: user.isModerator },
@@ -300,9 +480,6 @@ export const resetPassword = async (req, res, next) => {
         expiresIn: "5h",
       }
     );
-
-    console.log("Generated token:", token);
-
     res.status(200).cookie("access_token", token, { httpOnly: true }).json({
       status: "success",
       data: user,

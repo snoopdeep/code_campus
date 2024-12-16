@@ -1,0 +1,30 @@
+<div style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: auto; background-color: #f4f4f4; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+    <div style="background-color: #007bff; color: white; text-align: center; padding: 10px 0; border-radius: 10px 10px 0 0;">
+      <h2>New Feedback Submitted on CodeCampus</h2>
+    </div>
+    <div style="padding: 20px;">
+      <p><strong>User Information:</strong></p>
+      <p>
+        <strong>Name:</strong> {{fullName}}<br>
+        <strong>Email:</strong> <a href="mailto:${
+          feedbackData.user.email
+        }">{{email}}</a><br>
+        <strong>Profile Picture:</strong> <a href={{profilePicture}}>View Profile Picture</a><br>
+        <strong>Account Created At:</strong>{{createdAt}}<br>
+        <strong>Last Updated:</strong>{{updatedAt}}
+      </p>
+      <hr>
+      <p><strong>Feedback Details:</strong></p>
+      <p>
+        <strong>Overall Rating:</strong>{{rating}}/5<br>
+        <strong>Content Quality Rating:</strong> {{contentRating}}/5<br>
+        <strong>Feedback:</strong> {{feedback}}<br>
+        <strong>Suggestions for Improvement:</strong> {{suggestions}}
+      </p>
+    </div>
+    <div style="text-align: center; margin-top: 20px; font-size: 0.9em; color: #777;">
+      Please review this feedback and take any necessary actions to enhance the platform experience.<br><br>
+      Thank you, <br>
+      <strong>CodeCampus Feedback System</strong>
+    </div>
+  </div>

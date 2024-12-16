@@ -2,16 +2,18 @@ import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import OAuth from "../components/OAuth";
+import { BiShow,BiHide } from "react-icons/bi";
+
 
 export default function SignUp() {
   // State to manage form data
   const [formData, setFormData] = useState({
-    name: "",
+    fullName: "",
+    userName: "",
     email: "",
     password: "",
     confirmPassword: "",
-    fullName: "",
-    USN: "",
+    // USN: "",
   });
 
   // State to manage OTP input
@@ -45,10 +47,10 @@ export default function SignUp() {
   useEffect(() => {
     if (errorMessage) {
       setFormData({
-        name: "",
+        userName: "",
         fullName: "",
         email: "",
-        USN: "",
+        // USN: "",
         password: "",
         confirmPassword: "",
       });
@@ -82,13 +84,13 @@ export default function SignUp() {
     e.preventDefault();
     // Validate form inputs
     if (
-      !formData.name ||
+      !formData.userName ||
       !formData.fullName ||
       !formData.email ||
       // !formData.USN ||
       !formData.password ||
       !formData.confirmPassword ||
-      formData.name === " " ||
+      formData.userName === " " ||
       formData.fullName === " " ||
       formData.email === " " ||
       // formData.USN === " " ||
@@ -129,9 +131,10 @@ export default function SignUp() {
       if (!res.ok) {
         setLoading(false);
         setFormData({
-          name: "",
+          userName: "",
           email: "",
           password: "",
+          fullName: "",
         });
         return setErrorMessage(data.message || "Signup failed");
       }
@@ -148,9 +151,10 @@ export default function SignUp() {
     } catch (err) {
       setLoading(false);
       setFormData({
-        name: "",
+        userName: "",
         email: "",
         password: "",
+        fullName: "",
       });
       console.error(err);
       return setErrorMessage(err.message || "An unexpected error occurred");
@@ -251,32 +255,34 @@ export default function SignUp() {
       <div className="flex p-3 max-w-3xl mx-auto flex-col md:flex-row md:items-center gap-5">
         {/* Left Side */}
         <div className="flex-1">
-          <Link to={"/"} className="font-bold dark:text-white text-4xl">
+          <Link to={"#"} className="font-bold dark:text-white text-4xl">
             <img src="/user (1).png"></img>
             <span className="px-0 py-1 rounded-lg text-text-gray-700 dark:white">
               ace
             </span>
             <span className="text-blue-500">Connect</span>
           </Link>
-          <p className="text-sm mt-5">
-            Password must be at least{" "}
-            <span className="font-semibold">8 characters</span> long and include
-            at least:
-            <ul className="list-inside list-disc mt-2 text-sm">
-              <li className="text-gray-700 dark:text-gray-200">
-                One <span className="font-semibold">uppercase letter</span>
-              </li>
-              <li className="text-gray-700 dark:text-gray-200">
-                One <span className="font-semibold">lowercase letter</span>
-              </li>
-              <li className="text-gray-700 dark:text-gray-200">
-                One <span className="font-semibold">digit</span>
-              </li>
-              <li className="text-gray-700 dark:text-gray-200">
-                One <span className="font-semibold">special character</span>
-              </li>
-            </ul>
-          </p>
+          {!isOtpSent && (
+            <p className="text-sm mt-5">
+              Password must be at least{" "}
+              <span className="font-semibold">8 characters</span> long and
+              include at least:
+              <ul className="list-inside list-disc mt-2 text-sm">
+                <li className="text-gray-700 dark:text-gray-200">
+                  One <span className="font-semibold">uppercase letter</span>
+                </li>
+                <li className="text-gray-700 dark:text-gray-200">
+                  One <span className="font-semibold">lowercase letter</span>
+                </li>
+                <li className="text-gray-700 dark:text-gray-200">
+                  One <span className="font-semibold">digit</span>
+                </li>
+                <li className="text-gray-700 dark:text-gray-200">
+                  One <span className="font-semibold">special character</span>
+                </li>
+              </ul>
+            </p>
+          )}
         </div>
 
         {/* Right Side */}
@@ -298,12 +304,12 @@ export default function SignUp() {
               </div>
               {/* 2: username */}
               <div>
-                <Label htmlFor="name" value="Your Username" />
+                <Label htmlFor="userName" value="Your Username" />
                 <TextInput
                   type="text"
                   placeholder="Username"
-                  id="name"
-                  value={formData.name}
+                  id="userName"
+                  value={formData.userName}
                   onChange={handleChange}
                   required
                 />
@@ -353,7 +359,7 @@ export default function SignUp() {
                       cursor: "pointer",
                     }}
                   >
-                    {showPassword ? "Hide" : "Show"}
+                    {showPassword ? <BiHide /> : <BiShow />}
                   </button>
                 </div>
               </div>
@@ -366,6 +372,7 @@ export default function SignUp() {
                     id="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
+                    autoComplete="off"
                     required
                   />
                   <button
@@ -381,12 +388,12 @@ export default function SignUp() {
                       cursor: "pointer",
                     }}
                   >
-                    {showConfirmPassword ? "Hide" : "Show"}
+                    {showConfirmPassword ? <BiHide /> : <BiShow />}
                   </button>
                 </div>
               </div>
               <Button
-                gradientDuoTone={"purpleToPink"}
+                className="bg-red-500 dark:bg-red-500 "
                 type="submit"
                 disabled={loading}
               >

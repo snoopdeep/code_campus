@@ -120,13 +120,13 @@ export default function DashUsers() {
                     {/* <Link to={`/user/${user.slug}`}> */}
                       <img
                         src={user.profilePicture}
-                        alt={user.name}
+                        alt={user.userName}
                         className="w-10 h-10 object-cover bg-gray-500 rounded-full"
                       ></img>
                     {/* </Link> */}
                   </TableCell>
                   <TableCell className={user.isAdmin?"text-red-600":(user.isModerator?"text-violet-600":"")}>
-                      {user.name}
+                      {user.userName}
                     {/* </Link> */}
                   </TableCell>
                   <TableCell>{user.email}</TableCell>

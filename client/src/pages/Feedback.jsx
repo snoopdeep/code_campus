@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Alert } from "flowbite-react";
+import { Alert, Spinner,Button } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
 
 const FeedbackForm = () => {
@@ -11,6 +11,7 @@ const FeedbackForm = () => {
   const { currentUser } = useSelector((state) => state.user);
   const [successMessage, setSuccessMessage] = useState(null);
   const [failureMessage, setFailureMessage] = useState(null);
+  const [loading, setLoading] = useState(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -31,6 +32,7 @@ const FeedbackForm = () => {
       suggestions,
     };
     try {
+      setLoading(true);
       const response = await fetch("http://localhost:3000/api/users/feedback", {
         method: "POST",
         credentials: "include",
@@ -43,17 +45,18 @@ const FeedbackForm = () => {
       const data = await response.json();
       if (data.status === "success") {
         setSuccessMessage("Thanks for submitting you valuable feedback.");
-        // const timer =
         setTimeout(() => {
           navigate("/");
-        }, 3000);
-        // return () => clearTimeout(timer);
+        }, 5000);
+        setLoading(false);
       } else {
+        setLoading(false);
         setFailureMessage("something went wrong!");
         return;
       }
     } catch (err) {
       console.log(err);
+      setLoading(false);
       setFailureMessage(err.message);
     }
   };
@@ -69,7 +72,9 @@ const FeedbackForm = () => {
 
   return (
     <div className="max-w-xl mx-auto bg-feedbackFormCustomColor p-6 rounded-md shadow-lg m-8">
-      <h2 className="text-2xl text-black font-semibold mb-4 text-center">Feedback Form</h2>
+      <h2 className="text-2xl text-black font-semibold mb-4 text-center">
+        Feedback Form
+      </h2>
       <form onSubmit={handleSubmit}>
         {/* Rating System */}
         <div className="mb-4">
@@ -156,12 +161,20 @@ const FeedbackForm = () => {
         </div>
 
         {/* Submit Button */}
-        <button
+        <Button
+          className="bg-red-500 dark:bg-red-500 "
           type="submit"
-          className="w-full py-2 px-4 bg-teal-500 text-white font-semibold rounded-md hover:bg-green-500"
+          disabled={loading}
         >
-          Submit Feedback
-        </button>
+          {loading ? (
+            <>
+              <Spinner size="sm" />
+              <span className="pl-3">Loading...</span>
+            </>
+          ) : (
+            "Submit Feedback"
+          )}
+        </Button>
       </form>
       {failureMessage && (
         <Alert className="mt-5" color={"failure"}>

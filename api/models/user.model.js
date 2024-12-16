@@ -4,13 +4,14 @@ import crypto from "crypto";
 // User schema definition
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    userName: {
       type: String,
       required: true,
       unique: true,
     },
     fullName: {
       type: String,
+      required:true,
     },
     linkedIn: {
       type: String,
@@ -46,6 +47,10 @@ const userSchema = new mongoose.Schema(
     isDeleted: {
       type: Boolean,
       default: false,
+    },
+    isUserBlocked:{
+      type:Boolean,
+      default:false,
     },
     // OTP related fields
     otp: {
