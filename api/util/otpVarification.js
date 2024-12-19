@@ -3,16 +3,20 @@ import User from "../models/user.model.js";
 import { errorHandler } from "../util/error.js";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
+import { sendMail } from "./sendMail.js";
+import fs from "fs";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const otpVerification = async (req, res, next) => {
   const { email, otp } = req.body;
-  console.log("this is otpVerification route", email, otp);
   if (!email || !otp) {
     return next(errorHandler(400, "Email and OTP are required"));
   }
   try {
     // Find user by email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return next(errorHandler(404, "User not found"));
     }
@@ -57,24 +61,6 @@ const generateOTP = () => {
   return crypto.randomInt(100000, 999999).toString();
 };
 
-const sendOTPEmail = async (email, otp) => {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER, // Your Gmail address
-      pass: process.env.EMAIL_PASS, // Your Gmail password or App Password
-    },
-  });
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: "Your OTP for Signup Verification",
-    text: `Your OTP is: ${otp}`,
-  };
-
-  await transporter.sendMail(mailOptions);
-};
 export const resendOTP = async (req, res, next) => {
   const { email } = req.body;
   if (!email || email.trim() === "") {
@@ -82,7 +68,7 @@ export const resendOTP = async (req, res, next) => {
   }
 
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email:email.toLowerCase() });
     if (!user) {
       return next(errorHandler(404, "User not found"));
     }
@@ -104,8 +90,18 @@ export const resendOTP = async (req, res, next) => {
     user.otp = otp;
     user.otpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
     await user.save();
-
-    await sendOTPEmail(email, otp);
+    const templatePath = path.join(
+      __dirname,
+      "..",
+      "util",
+      "emailTemplates",
+      "otpRequestMessage.html"
+    );
+    const htmlContent = fs.readFileSync(templatePath, "utf-8");
+    const message = htmlContent
+      .replace("{{fullName}}", user.fullName)
+      .replace("{{otp}}", otp);
+    await sendMail(email.toLowerCase(), "otpRequest",message);
 
     res.status(200).json({ message: "OTP has been resent to your email." });
   } catch (err) {

@@ -3,8 +3,6 @@ import Comment from "../models/comment.model.js";
 
 export const createComment = async (req, res, next) => {
   try {
-    console.log("hi from createComment");
-    console.log("req.body:", req.body); // Log the request body
 
     const { content, postId, userId } = req.body;
 
@@ -16,12 +14,10 @@ export const createComment = async (req, res, next) => {
       content,
       postId,
       userId,
-    });
+    })
 
-    console.log("new comment is:", newComment);
     await newComment.save();
     res.status(200).json(newComment);
-    console.log("comment created");
   } catch (err) {
     console.log("Error:", err);
     next(err); // Pass the error to the next middleware
@@ -30,9 +26,30 @@ export const createComment = async (req, res, next) => {
 
 export const getPostComments = async (req, res, next) => {
   try {
-    const comments = await Comment.find({
+    const finalComments = await Comment.find({
       postId: req.params.postId,
-    }).sort({ createdAt: -1 });
+    })
+      .populate("userId", [
+        "userName",
+        "fullName",
+        "email",
+        "isAdmin",
+        "isModerator",
+        "isDeleted",
+        "github",
+        "linkedIn",
+        "profilePicture",
+      ])
+      .sort({ createdAt: -1 });
+    // check if comment user is deleted
+    const comments = finalComments.map((comment) => {
+      if (comment?.userId?.isDeleted) {
+        comment.userId.userName = "[Deleted]";
+        comment.userId.email = null;
+        comment.userId.fullName = null;
+      }
+      return comment;
+    });
     res.status(200).json(comments);
   } catch (err) {
     console.log("Error:", err);
@@ -64,15 +81,14 @@ export const likeComment = async (req, res, next) => {
 
 // edit comment
 export const editComment = async (req, res, next) => {
-  console.log('hi from editComment');
   try {
-    const comment = await Comment.findById(req.params.commentId);
+    const comment = await Comment.findById(req.params.commentId).populate(
+      "userId"
+    );
     if (!comment) {
       return next(errorHandler(404, "comment is not found"));
     }
-    console.log('commentUserId',comment.userId,'userId',req.user.id,'isAdmin',req.user.isAdmin);
-    if (comment.userId !== req.user.id && !req.user.isAdmin) {
-      // console.log("hello, you are not allow to edit this comment");
+    if (comment.userId._id.toString() !== req.user.id && !req.user.isAdmin) {
       return next(errorHandler(404, "you are not allow to edit this comment"));
     }
     const editedComment = await Comment.findByIdAndUpdate(
@@ -91,15 +107,12 @@ export const editComment = async (req, res, next) => {
 
 // delete comment // only admin or the owner of the comment is allowed
 export const deleteComment = async (req, res, next) => {
-  console.log('this is deleteComment middleware.. ');
   try {
     const commentId = req.params.commentId;
     const comment = await Comment.findById(commentId);
-    console.log(comment);
     if (!comment) {
       return next(errorHandler(404, "Comment not found"));
     }
-    console.log(req.user);
     if (comment.userId !== req.user.id && !req.user.isAdmin) {
       return next(
         errorHandler(404, "you are not allow to delete this comment")

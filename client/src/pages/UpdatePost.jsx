@@ -1,5 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Button, TextInput, Select, FileInput, Alert } from "flowbite-react";
+import {
+  Button,
+  TextInput,
+  Select,
+  FileInput,
+  Alert,
+  Modal,
+} from "flowbite-react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { useNavigate, useParams } from "react-router-dom";
@@ -12,6 +19,7 @@ import {
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { useSelector } from "react-redux";
+import { HiOutlineExclamationCircle } from "react-icons/hi";
 
 export default function UpdatePost() {
   const [file, setFile] = useState(null);
@@ -25,6 +33,9 @@ export default function UpdatePost() {
   });
   const [publishError, setPublishError] = useState(null);
   const [publishSuccess, setPublishSuccess] = useState(null);
+  const [showModel, setShowModel] = useState(false); // For modal visibility
+  const [loading, setLoading] = useState(false); // For loading state
+
   const { postId } = useParams();
   const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
@@ -103,6 +114,7 @@ export default function UpdatePost() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Show loading spinner when submitting the post
     try {
       const res = await fetch(
         `http://localhost:3000/api/post/updatepost/${postId}/${currentUser._id}`,
@@ -116,6 +128,7 @@ export default function UpdatePost() {
         }
       );
       const data = await res.json();
+      setLoading(false); // Hide loading spinner after response
       if (!res.ok) {
         setPublishError(data.message || "Failed to update the post.");
         // Start timer to clear error after 5 seconds
@@ -130,6 +143,9 @@ export default function UpdatePost() {
       setPublishError(null);
       setPublishSuccess("Updated Successfully");
 
+      // Show modal after post update
+      setShowModel(true);
+
       // Start timer to clear success message and redirect after 5 seconds
       if (successTimerRef.current) {
         clearTimeout(successTimerRef.current);
@@ -140,6 +156,7 @@ export default function UpdatePost() {
     } catch (error) {
       console.log(error);
       setPublishError("Something went wrong");
+      setLoading(false); // Hide loading spinner in case of error
       // Start timer to clear error after 5 seconds
       if (errorTimerRef.current) {
         clearTimeout(errorTimerRef.current);
@@ -235,11 +252,36 @@ export default function UpdatePost() {
           value={formData.content}
         />
         <Button type="submit" gradientDuoTone="purpleToPink">
-          Update Post
+          {loading ? "Loading..." : "Update Post"}
         </Button>
         {publishError && <Alert color="failure">{publishError}</Alert>}
         {publishSuccess && <Alert color="success">{publishSuccess}</Alert>}
       </form>
+
+      {/* Modal for post submission */}
+      <Modal
+        show={showModel}
+        onClose={() => setShowModel(false)}
+        popup
+        size={"md"}
+      >
+        <Modal.Header />
+        <Modal.Body>
+          <div className="text-center">
+            <HiOutlineExclamationCircle className="h-14 w-14 text-green-400 dark:text-green-200 mb-4 mx-auto" />
+            <h3 className="mb-5 text-lg text-gray-700 dark:text-gray-300">
+              Congratulations!
+            </h3>
+            <p className="mb-5 text-md text-gray-500 dark:text-gray-400">
+              Thank you for your valuable contribution. Your post has been
+              submitted and is awaiting admin approval.
+            </p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
+              You will be redirected to the post page shortly.
+            </p>
+          </div>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 }

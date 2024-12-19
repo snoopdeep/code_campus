@@ -21,9 +21,7 @@ export default function DashComments() {
             credentials: "include",
           }
         );
-        // console.log('res',res);
         const data = await res.json();
-        console.log("data", data);
         if (res.ok) {
           setComments(data.comments);
           if (data.comments.length < 9) {
@@ -65,7 +63,6 @@ export default function DashComments() {
   // handleDeletePost function
   const handleDeleteComment = async () => {
     setShowModel(false);
-    console.log("hi from handleDeletePost", commentIdToDelete);
     try {
       const res = await fetch(
         `http://localhost:3000/api/comment/deleteComment/${commentIdToDelete}`,

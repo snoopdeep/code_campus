@@ -15,7 +15,6 @@ export default function DashUsers() {
 
   useEffect(() => {
     const fetchUsers = async () => {
-        // console.log('hi from fetchUsers');
       try {
         const res = await fetch(
           `http://localhost:3000/api/users/getusers`,{
@@ -23,9 +22,7 @@ export default function DashUsers() {
             credentials: "include",
           }
         );
-        // console.log('res',res);
         const data = await res.json();
-        console.log('data',data);
         if (res.ok) {
           setUsers(data.users);
           if (data.users.length < 9) {
@@ -38,11 +35,9 @@ export default function DashUsers() {
     };
 
     if (currentUser?.isAdmin) {
-        // console.log('yes admin');
       fetchUsers();
     }
   }, [currentUser._id]);
-//   console.log(userPosts);
   // handleShowMore function
   const handleShowMore = async () => {
     const startIndex = users.length;
@@ -68,7 +63,6 @@ export default function DashUsers() {
   // handleDeletePost function
   const handleDeleteUser = async () => {
     setShowModel(false);
-    console.log('hi from handleDeletePost', userIdToDelete);
     try {
       const res = await fetch(
         `http://localhost:3000/api/users/delete/${userIdToDelete}`,

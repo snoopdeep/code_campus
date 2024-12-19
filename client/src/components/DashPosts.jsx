@@ -24,9 +24,7 @@ export default function DashPosts() {
             credentials: "include",
           }
         );
-        console.log('this is dashpost and res is ',res);
         const data = await res.json();
-        console.log('this is dashpost and data is ',data);
         if (res.ok) {
           setUserPosts(data.posts);
           if (data.posts.length < 9) {
@@ -42,7 +40,6 @@ export default function DashPosts() {
       fetchPosts();
     }
   }, [currentUser]);
-  console.log("This is DashPost.jsx and post is :: ", userPosts,'current user is :',currentUser);
   // handleShowMore function
   const handleShowMore = async () => {
     const startIndex = userPosts.length;
@@ -69,7 +66,6 @@ export default function DashPosts() {
   // handleDeletePost function
   const handleDeletePost = async () => {
     setShowModel(false);
-    console.log("hid from handleDeletePost", postId, currentUser);
     try {
       const res = await fetch(
         `http://localhost:3000/api/post/deletepost/${postId}/${currentUser._id}`,
@@ -89,7 +85,6 @@ export default function DashPosts() {
   };
 
   const handleVerifyPost = async (postId) => {
-    console.log("this is handleVerifyPost and postId is :", postId);
     try {
       const res = await fetch(
         `http://localhost:3000/api/post/verifyPost/${postId}`,
@@ -104,7 +99,6 @@ export default function DashPosts() {
             post._id === postId ? { ...post, isVerified: true } : post
           )
         );
-        console.log("post is verified");
         return;
       } else {
         console.log("error while verify the post");

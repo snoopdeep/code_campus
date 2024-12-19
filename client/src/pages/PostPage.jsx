@@ -19,7 +19,6 @@ export default function PostPage() {
   const [recentPosts, setRecentPosts] = useState(null);
   const [showModel, setShowModel] = useState(false);
 
-  console.log("post slug is ", postSlug);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -32,9 +31,7 @@ export default function PostPage() {
             credentials: "include",
           }
         );
-        // console.log(res);
         const data = await res.json();
-        console.log("this is PostPage.jsx and data is ", data);
         if (!res.ok) {
           setError(true);
           setLoading(false);
@@ -54,7 +51,6 @@ export default function PostPage() {
     fetchPost();
   }, [postSlug]);
 
-  console.log("this is postPage.jsx and post is :", post);
 
   useEffect(() => {
     const getRecentPost = async () => {
@@ -76,7 +72,6 @@ export default function PostPage() {
     };
     getRecentPost();
   }, []);
-  // console.log(recentPosts);
 
   // Highlight code blocks after content is loaded
   useEffect(() => {
@@ -124,9 +119,7 @@ export default function PostPage() {
         ALLOWED_ATTR: ["href", "src", "alt", "class"],
       })
     : "";
-  console.log("post is :", post);
-  // console.log("postUser is ", postUser);
-  // console.log(postUser.profilePicture);
+
   return (
     <main className="p-3 flex flex-col max-w-6xl mx-auto min-h-screen">
       <h1 className="text-3xl mt-10 p-3 text-center font-serif max-w-2xl mx-auto lg:text-4xl">
@@ -182,26 +175,6 @@ export default function PostPage() {
           </div>
         </div>
       </div>
-
-      {/* Enhanced content rendering with custom styles */}
-      {/* <div
-        className="p-3 max-w-2xl mx-auto w-full post-content prose prose-lg 
-    prose-headings:text-gray-900 
-    dark:prose-headings:text-gray-300
-    prose-p:text-gray-700 
-    dark:prose-p:text-gray-300
-    prose-ul:list-disc 
-    prose-ol:list-decimal 
-    prose-ul:pl-6 
-    prose-ol:pl-6 
-    prose-code:bg-gray-600 
-    prose-code:p-1 
-    prose-code:rounded 
-    prose-pre:bg-gray-600 
-    prose-pre:p-4 
-    prose-pre:rounded"
-        dangerouslySetInnerHTML={{ __html: sanitizedContent }}
-      ></div> */}
       <div
         className="
     p-3 max-w-2xl mx-auto w-full post-content prose prose-lg

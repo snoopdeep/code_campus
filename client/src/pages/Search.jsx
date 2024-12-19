@@ -11,12 +11,10 @@ export default function Search() {
     category: 'uncategorized',
   });
 
-  console.log(sidebarData);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const {currentUser}= useSelector((state)=>state.user);
-  console.log('current user is : ',currentUser);
 
   const location = useLocation();
 

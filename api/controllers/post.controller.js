@@ -10,7 +10,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Create a new post
 export const create = async (req, res, next) => {
-  console.log("this is create post.jsx :", req.body);
   if (!req.body.title || !req.body.content) {
     return res.status(400).json({ message: "Title and content are required" });
   }
@@ -20,7 +19,6 @@ export const create = async (req, res, next) => {
     .split(" ")
     .join("-")
     .replace(/[^a-zA-Z0-9-]/g, "");
-  console.log("this is create new post, post is : ", req.body);
   const post = new Post({
     ...req.body,
     slug,
@@ -29,7 +27,6 @@ export const create = async (req, res, next) => {
 
   try {
     const savedPost = await post.save();
-    console.log("this is post create middleware and post is :");
     // send mail to the user that ur post is under review
     const user = await User.findById(req.user.id);
     if (user) {
@@ -53,20 +50,14 @@ export const create = async (req, res, next) => {
   }
 };
 
-// 1: Get posts with access control ie req.user will be avaible
-// 2: non admin can only see there posts
-// 3: populate userId field and if user is deleted change name to [Deleted]
-// 4: if user is admin show all posts else show only post of that user
 export const getposts = async (req, res, next) => {
   try {
-    console.log("hi from getposts");
     const startIndex = parseInt(req.query.startIndex) || 0;
     const limit = parseInt(req.query.limit) || 9;
     const sortDirection = req.query.order === "asc" ? 1 : -1;
 
     // Build the filter based on user role
     let filter = {};
-    // console.log(req.user);
     const userResponse = await fetch(
       `http://localhost:3000/api/users/${req.user.id}`,
       {
@@ -75,11 +66,9 @@ export const getposts = async (req, res, next) => {
       }
     );
     const user = await userResponse.json();
-    // if(user.status!=="success")return next(404,"No user is found");
-    console.log("this is getposts and user is ", req.user);
+  
     // Non-admins see only their posts
     if (!req?.user?.isAdmin && !req.user.isModerator) {
-      console.log("hi from the if block");
       filter.userId = req.user.id;
       if (user?.isModerator) filter.userId = user.data.userId;
     }
@@ -95,8 +84,6 @@ export const getposts = async (req, res, next) => {
         { content: { $regex: req.query.searchTerm, $options: "i" } },
       ];
     }
-    // console.log(req.query);
-    console.log("filter is ", filter);
     const tempPosts = await Post.find(filter)
       .sort({ updatedAt: sortDirection })
       .skip(startIndex)
@@ -108,7 +95,6 @@ export const getposts = async (req, res, next) => {
         "isDeleted",
         "isModerator",
       ]);
-    // console.log(tempPosts);
 
     // if user is deleted then change the name of it
     const posts = tempPosts.map((post) => {
@@ -118,7 +104,6 @@ export const getposts = async (req, res, next) => {
       }
       return post;
     });
-    // console.log(posts);
 
     const totalPosts = await Post.countDocuments(filter);
 
@@ -144,12 +129,8 @@ export const getposts = async (req, res, next) => {
   }
 };
 
-// 1: getAllPosts -> without access control ie req.user will not be there
-// 2: if user id deleted -> [Deleted]
-// 3: it should only show verified post to user and admin
 export const getAllPosts = async (req, res, next) => {
   try {
-    console.log("hi from getAllPosts");
 
     // Parse query parameters for pagination and sorting
     const startIndex = parseInt(req.query.startIndex, 10) || 0;
@@ -185,23 +166,31 @@ export const getAllPosts = async (req, res, next) => {
       .sort({ updatedAt: sortDirection })
       .skip(startIndex)
       .limit(limit)
-      .populate(
-        "userId",
-        "userName profilePicture isAdmin isDeleted isModerator"
-      );
+      .populate("userId", [
+        "userName",
+        "profilePicture",
+        "isVerified",
+        "isDeleted",
+        "isAdmin",
+        "isModerator",
+        "fullName",
+        "email",
+        "linkedIn",
+        "github",
+      ]);
 
-    // if user is deleted then change the name of it
+    // check if the user is deleted so change the response before sending..
     const posts = tempPosts.map((post) => {
-      // Check if the user exists and is marked as deleted
-      if (post.userId?.isDeleted) {
-        post.userId.name = `[Deleted]`;
+      if (post?.userId?.isDeleted) {
+        post.userId.userName = "[Deleted]";
+        post.userId.email = null;
+        post.userId.fullName = null;
       }
       return post;
     });
 
     // Count total number of posts matching the filter
     const totalPosts = await Post.countDocuments(filter);
-    // console.log('This is get all posts :',posts,totalPosts);
 
     // Calculate the number of posts created in the last month
     const now = new Date();
@@ -230,8 +219,7 @@ export const getAllPosts = async (req, res, next) => {
 
 // Delete a post with access control
 export const deletePost = async (req, res, next) => {
-  console.log("hi from deletePost", req.user);
-  console.log("req.params.userId", req.params.userId);
+
 
   // Corrected logical condition: Use AND instead of OR
   if (
@@ -259,9 +247,7 @@ export const deletePost = async (req, res, next) => {
 
 // Update a post with access control
 export const updatePost = async (req, res, next) => {
-  console.log("hi from updatePost");
-  console.log(req.params);
-  console.log(req.user);
+
 
   // Corrected logical condition: Use AND instead of OR
   if (
@@ -274,7 +260,6 @@ export const updatePost = async (req, res, next) => {
       .json({ message: "You are not allowed to update this post" });
   }
 
-  console.log("req.body", req.body);
 
   try {
     const post = await Post.findById(req.params.postId);
@@ -290,12 +275,12 @@ export const updatePost = async (req, res, next) => {
           content: req.body.content,
           category: req.body.category,
           image: req.body.image,
+          isVerified:false,
         },
       },
       { new: true }
     );
 
-    console.log("updatedPost", updatedPost);
     res.status(200).json(updatedPost);
   } catch (err) {
     next(err);
@@ -304,15 +289,8 @@ export const updatePost = async (req, res, next) => {
 
 // verify post
 export const verifyPost = async (req, res, next) => {
-  console.log("hello from the verify post");
   try {
-    // let responseUser=req.user.;
-    // if(req.responseUser) user=await fetch(`http://localhost:3000/api/users/${req.user.id}`,{
-    //   method:"GET",
-    //   credentials:"include"
-    // });
-    // const user=await responseUser.json();
-    // console.log('user is ',user);
+
     if (!req.user.isAdmin && !req.user.isModerator) {
       return next(
         errorHandler(
@@ -321,25 +299,18 @@ export const verifyPost = async (req, res, next) => {
         )
       );
     }
-    // console.log(req.params);
     const post = await Post.findById(req.params.postId).populate("userId", [
       "email",
       "name",
       // "isModerator",
     ]);
     if (!post) return next(errorHandler(404, "No post is found"));
-    // change the isVarify filed of the post to true
-    // console.log(post);
-    // if (!post.userId.isModerator) {
-    //   return next(errorHandler(404, "You are not allowed to verify a post"));
-    // }
+
     if (post.isVerified) {
       return next(errorHandler(400, "Post is already verified."));
     }
     post.isVerified = true;
     post.save();
-    // send mail to the user that his/her post is now available
-    console.log("this is verify post and post is :", post);
 
     const templatePath = path.join(
       __dirname,
@@ -352,7 +323,7 @@ export const verifyPost = async (req, res, next) => {
     const message = htmlContent
       .replace("{{fullName}}", post?.userId?.fullName)
       .replace("{{title}}", post.title)
-      .replace("{{postLiveLink}}", `https://localhost:3000/post/${post.slug}`)
+      .replace("{{postLiveLink}}", `http://localhost:5173/post/${post.slug}`)
       .replace("{{date}}", new Date().getFullYear());
 
     await sendMail(post.userId.email, "postVerificationConfirmed", message);
@@ -367,14 +338,10 @@ export const verifyPost = async (req, res, next) => {
   }
 };
 
-// get both verified and unverified post
-// 1: req.user will be there
+
 export const getVerifiedAndunVerifiedPost = async (req, res, next) => {
-  console.log("this is getunVerifyPosts");
   try {
-    console.log(req.query);
     const { slug } = req.query;
-    console.log({ slug });
     if (!slug) return next(errorHandler(404, "No post Slug"));
     const post = await Post.findOne({ slug }).populate("userId", [
       "userName",
@@ -389,7 +356,12 @@ export const getVerifiedAndunVerifiedPost = async (req, res, next) => {
       "github",
     ]);
     if (!post) return next(errorHandler(404, "No post is found"));
-    // console.log("hi this is from getVerandUnver post :", post);
+    // check if the user is deleted so change the response before sending..
+    if (post?.userId?.isDeleted) {
+      post.userId.userName = "[Deleted]";
+      post.userId.email = null;
+      post.userId.fullName = null;
+    }
     res.status(200).json({
       status: "success",
       post,

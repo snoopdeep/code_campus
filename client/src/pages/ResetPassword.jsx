@@ -45,7 +45,6 @@ export default function ResetPassword() {
       setLoading(true);
       setErrorMessage(null);
       setResetPasswordSuccess(null);
-      console.log("ResetPassword.jsx token:", resetToken);
 
       const res = await fetch(
         `http://localhost:3000/api/auth/reset-password/${resetToken}`,
@@ -60,7 +59,6 @@ export default function ResetPassword() {
       );
 
       const data = await res.json();
-      console.log("ResetPassword.jsx response data:", data);
 
       if (res.ok && data.status === "success") {
         setResetPasswordSuccess("Password changed successfully.");

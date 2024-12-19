@@ -1,9 +1,9 @@
 import { Button } from "flowbite-react";
 import React from "react";
 import { AiFillGoogleCircle } from "react-icons/ai";
+import { FcGoogle } from "react-icons/fc";
 import { GoogleAuthProvider, signInWithPopup, getAuth } from "firebase/auth";
 import { app } from "../firebase";
-// console.log(GoogleAuthProvider,signInWithPopup,getAuth,app);
 
 import {
   signInStart,
@@ -22,7 +22,6 @@ export default  function  OAuth() {
     provider.setCustomParameters({ prompt: "select_account" }); // it will always prompt the user to select the account
     try {
       const resultFromGoogle = await signInWithPopup(auth, provider);
-      console.log(resultFromGoogle);
       // SEND the information to the backend
       const res = await fetch("http://localhost:3000/api/auth/google", {
         method: "POST",
@@ -31,13 +30,12 @@ export default  function  OAuth() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: resultFromGoogle.user.displayName,
-          email: resultFromGoogle.user.email,
+          userName: `${resultFromGoogle.user.displayName.split(' ').join('.').toLowerCase()}.${resultFromGoogle.user.email.split('@')[0]}`,
+          fullName:resultFromGoogle.user.displayName,
+          email: resultFromGoogle.user.email.toLocaleLowerCase(),
           googlePhotoURL: resultFromGoogle.user.photoURL,
         }),
       });
-      console.log(res);
-      // console.log(res.json());
       const data = await res.json();
       if (res.ok) {
         dispatch(signInSuccess(data));
@@ -50,11 +48,12 @@ export default  function  OAuth() {
   return (
     <Button
       type="button"
-      gradientDuoTone="pinkToOrange"
+      // gradientDuoTone="pinkToOrange"
       outline
       onClick={handleGoogleClick}
     >
-      <AiFillGoogleCircle className="w-6 h-6 mr-2" />
+      {/* <AiFillGoogleCircle className="w-6 h-6 mr-2" /> */}
+      <FcGoogle className="w-5 h-5 mr-8 centre" />
       Sign Up with Google
     </Button>
   );

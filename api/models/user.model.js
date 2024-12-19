@@ -19,9 +19,6 @@ const userSchema = new mongoose.Schema(
     github: {
       type: String,
     },
-    // usn:{
-    //   type:String
-    // },
     email: {
       type: String,
       required: true,
@@ -78,7 +75,6 @@ userSchema.methods.createResetToken = function () {
     .update(resetToken)
     .digest("hex");
   this.passwordResetTokenExpire = Date.now() + 5 * 60 * 1000;
-  console.log("this is createResetToken instance method.. ");
   return resetToken;
 };
 

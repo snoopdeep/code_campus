@@ -10,16 +10,13 @@ import DashboardComp from "../components/DashboardComp.jsx";
 
 export default function Dashboard() {
   const location = useLocation();
-  // console.log("location", location);
   const [tab, setTab] = useState("");
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
-    // console.log(urlParams);
     const tabFromUrl = urlParams.get("tab");
     if (tabFromUrl) {
       setTab(tabFromUrl);
     }
-    // console.log(tabFromUrl);
   });
   return (
     <div className="min-h-screen flex flex-col md:flex-row">

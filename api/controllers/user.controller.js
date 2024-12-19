@@ -18,7 +18,6 @@ const generateOTP = () => {
   return crypto.randomInt(100000, 999999).toString();
 };
 export const updateUser = async (req, res, next) => {
-  console.log("hi from the update user", req.body);
   // check if the user id in the request is the same as the user id in the token
   if (req.params.userId !== req.user.id) {
     return next(errorHandler(401, "You are not allowed to update this user"));
@@ -68,7 +67,6 @@ export const updateUser = async (req, res, next) => {
         errorHandler(400, "Username should be between 5 and 20 characters long")
       );
     }
-    console.log("userName is :", userName);
     if (userName.includes(" ")) {
       return next(errorHandler(400, "Username should not contain spaces"));
     }
@@ -89,13 +87,11 @@ export const updateUser = async (req, res, next) => {
       return next(errorHandler(400, "Username is already taken"));
     }
   }
-  console.log("email is :", email);
   if (email) {
     const existingUserByEmail = await User.findOne({
       email,
       _id: { $ne: req.params.userId },
     });
-    console.log("existingUserByEmail is :", existingUserByEmail);
     if (existingUserByEmail) {
       return next(errorHandler(400, "Email is already in use"));
     }
@@ -142,7 +138,6 @@ export const updateUser = async (req, res, next) => {
       "emailTemplates",
       "userUpdateOTP.html"
     );
-    console.log(templatePath);
     const emailTemplates = fs.readFileSync(templatePath, "utf-8");
     const message = emailTemplates
       .replace("{{fullName}}", updatedUser.fullName)
@@ -150,7 +145,6 @@ export const updateUser = async (req, res, next) => {
     await sendMail(updatedUser.email, "otpUpdate", message);
     // unverify the user
     updatedUser.isVerified = false;
-    console.log("updated user", updatedUser);
     await updatedUser.save();
     updatedUser.password = undefined;
     // seperate the password from the user object
@@ -180,13 +174,13 @@ export const deleteUser = async (req, res, next) => {
     } else {
       if (requestingUserId.toString() !== userIdToDelete.toString()) {
         // Non-admin trying to delete someone else
-        return next(errorHandler(403, "You can only delete your own account"));
+        return next(errorHandler(403, "You are not allow to do this action"));
       }
     }
 
     //delete the user
-    console.log(userToDelete);
-    userToDelete.name = `[Deleted]_${userToDelete._id}`;
+    userToDelete.userName = `[Deleted]_${userToDelete._id}`;
+    userToDelete.fullName = `[Deleted]_${userToDelete._id}`;
     userToDelete.email = `deleted_${userToDelete._id}@example.com`;
     userToDelete.password = `deleted_${userToDelete._id}`;
     userToDelete.profilePicture =
@@ -195,8 +189,9 @@ export const deleteUser = async (req, res, next) => {
     userToDelete.isDeleted = true;
     userToDelete.isVerified = false;
     userToDelete.isModerator = false;
+    userToDelete.github=undefined;
+    userToDelete.linkedIn=undefined;
     await userToDelete.save({ validateBeforeSave: false });
-    // await User.findByIdAndDelete(userIdToDelete);
     res.status(200).json({ message: "User has been deleted" });
   } catch (err) {
     console.error("Error deleting user:", err.message);
@@ -260,7 +255,6 @@ export const getUsers = async (req, res, next) => {
 // get user controller
 export const getUser = async (req, res, next) => {
   try {
-    console.log("hi from getuser controller", req.params);
     const user = await User.findById(req.params.userId);
     if (!user) {
       return next(errorHandler(404, "User not found"));
@@ -282,8 +276,7 @@ export const getUser = async (req, res, next) => {
 
 export const postFeedback = async (req, res, next) => {
   try {
-    console.log("This is postFeedback controller");
-    console.log(req.body);
+
 
     const feedbackData = req.body;
 
@@ -295,7 +288,7 @@ export const postFeedback = async (req, res, next) => {
       "feedbackEmailMessage.html"
     );
     const htmlContent = fs.readFileSync(templatePath, "utf-8");
-    
+
     const feedbackEmail = htmlContent
       .replace("{{fullName}}", feedbackData.user.fullName)
       .replace("{{email}}", feedbackData.user.email)
@@ -329,16 +322,13 @@ export const postFeedback = async (req, res, next) => {
 
 // create order
 export const createOrder = async (req, res, next) => {
-  // console.log(process.env.RAZORPAY_KEY_ID);
   // Razorpay instance
   const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
     key_secret: process.env.RAZORPAY_KEY_SECRET,
   });
-  console.log("this is createOrder middleware");
   try {
     const { amount } = req.body;
-    // console.log(amount);
 
     if (!amount || amount <= 0) {
       return res.status(400).json({ error: "Invalid donation amount" });
@@ -349,7 +339,6 @@ export const createOrder = async (req, res, next) => {
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
     });
-    // console.log("this is createOrder and order is :", order);
 
     res.json({
       amount: order.amount,
@@ -363,7 +352,6 @@ export const createOrder = async (req, res, next) => {
 
 // payment success
 export const paymentSuccess = async (req, res, next) => {
-  console.log("this is paymentSuccess middleware");
   const { payment_id, order_id, email, amount } = req.body;
   try {
     // Fetch payment details from Razorpay (optional but recommended)
@@ -371,13 +359,7 @@ export const paymentSuccess = async (req, res, next) => {
       key_id: process.env.RAZORPAY_KEY_ID,
       key_secret: process.env.RAZORPAY_KEY_SECRET,
     });
-    console.log(
-      "this is paymentSuccess::",
-      payment_id,
-      order_id,
-      email,
-      amount
-    );
+
     const paymentDetails = await razorpay.payments.fetch(payment_id);
 
     const templatePath = path.join(
@@ -388,13 +370,13 @@ export const paymentSuccess = async (req, res, next) => {
       "paymentSuccess.html"
     );
     const htmlContent = fs.readFileSync(templatePath, "utf-8");
-    htmlContent = htmlContent
-      .replace("{{amout}}", amount / 100)
+    const message = htmlContent
+      .replace("{{amount}}", amount / 100)
       .replace("{{payment_id}}", payment_id)
       .replace("{{order_id}}", order_id)
       .replace("{{date}}", new Date().toLocaleDateString());
 
-    await sendMail(email, "paymentSuccess", htmlContent);
+    await sendMail(email, "paymentSuccess", message);
     // Respond to the user
     res.status(200).json({
       status: "success",

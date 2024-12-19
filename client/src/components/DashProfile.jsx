@@ -31,8 +31,7 @@ import {
 import { useDispatch } from "react-redux";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 import { Link, useNavigate } from "react-router-dom";
-import { BiShow,BiHide } from "react-icons/bi";
-
+import { BiShow, BiHide } from "react-icons/bi";
 
 export default function DashProfile() {
   const dispatch = useDispatch();
@@ -54,8 +53,8 @@ export default function DashProfile() {
   const [otp, setOtp] = useState("");
   const [updatedUser, setUpdatedUser] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [verifyLoading,setVerifyLoading]=useState(false);
-  const [resendLoading,setResendLoading]=useState(false);
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   // handleImageChange function
   const handleImageChange = (e) => {
@@ -235,7 +234,6 @@ export default function DashProfile() {
       setResendLoading(false);
       setUpdateUserError(err.message || "An unexpected error occurred");
     }
-    
   };
 
   // handle delete user
@@ -299,12 +297,10 @@ export default function DashProfile() {
       return () => setTimeout(timer);
     }
   }, [dispatch, error, updateUserError, updateUserSuccess]);
-  console.log("this is DashProfile and current user is :", currentUser);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-
   return (
     <div className="max-w-lg mx-auto p-3 w-full">
       {!isOtpSent ? (
@@ -385,7 +381,7 @@ export default function DashProfile() {
                     cursor: "pointer",
                   }}
                 >
-                  {showPassword ? <BiHide/> : <BiShow />}
+                  {showPassword ? <BiHide /> : <BiShow />}
                 </button>
               </div>
             </div>
@@ -412,8 +408,7 @@ export default function DashProfile() {
             />
             <Button
               type="submit"
-              gradientDuoTone="purpleToBlue"
-              outline
+              className="bg-blue-500 hover:bg-blue-600 text-white dark:bg-blue-500 dark:hover:bg-blue-600"
               disabled={loading || imageFileUploading}
             >
               {loading ? "Loading..." : "Update"}
@@ -483,11 +478,11 @@ export default function DashProfile() {
           {updateUserError}
         </Alert>
       )}
-      {error && (
+      {/* {error && (
         <Alert color={"failure"} className="mt-5">
           {error}
         </Alert>
-      )}
+      )} */}
       <Modal
         show={showModel}
         onClose={() => setShowModel(false)}

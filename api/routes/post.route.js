@@ -13,5 +13,4 @@ router.delete('/deletepost/:postId/:userId',verifyToken,deletePost);
 router.put('/updatepost/:postId/:userId',verifyToken,updatePost);
 router.post('/verifyPost/:postId',verifyToken,verifyPost);
 router.get('/getVerifiedAndunVerifiedPost',getVerifiedAndunVerifiedPost);
-// router.get('/getunVerifyPosts',verifyToken,getunVerifyPosts)
 export default router;

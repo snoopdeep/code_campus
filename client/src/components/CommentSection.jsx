@@ -12,15 +12,12 @@ import UserProfileModal from "./UserProfileModal";
 export default function CommentSection({ postId }) {
   const { currentUser } = useSelector((state) => state.user);
   const [comment, setComment] = useState("");
-  const [commentError, setCommentError] = useState(null);
   const [comments, setComments] = useState([]);
+  const [commentError, setCommentError] = useState(null);
   const [showModel, setShowModel] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  // console.log("comments are ", comments);
-  // console.log("post id is ", postId);
-  console.log("current user is ", currentUser);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,7 +40,6 @@ export default function CommentSection({ postId }) {
         }),
       });
       const data = await res.json();
-      console.log(data);
       // restrict the bad/ toxic comment
       if (data.status === "comment can't be posted") {
         setCommentError(data.message);
@@ -51,10 +47,12 @@ export default function CommentSection({ postId }) {
         return;
       }
       if (res.ok) {
-        setComment("");
-        setCommentError(null);
-        setLoading(false);
-        setComments([data, ...comments]);
+         // Manually set user details when the new comment is posted
+      const newComment = { ...data, userId: currentUser };  // Add user info
+      setComment("");  // Clear the comment input
+      setCommentError(null);
+      setLoading(false);
+      setComments([newComment, ...comments]);  // Add the comment with user info
       }
     } catch (err) {
       setCommentError("Something went wrong, please try again later");
@@ -62,9 +60,8 @@ export default function CommentSection({ postId }) {
       console.log(err);
     }
   };
-  // console.log("comment is : ", comment);
   useEffect(() => {
-    const getConmments = async () => {
+    const getComments = async () => {
       try {
         const res = await fetch(
           `http://localhost:3000/api/comment/getPostComments/${postId}`
@@ -72,17 +69,15 @@ export default function CommentSection({ postId }) {
         if (res.ok) {
           const data = await res.json();
           setComments(data);
-          // console.log(data);
         }
       } catch (err) {
         console.log(err);
       }
     };
-    getConmments();
+    getComments();
   }, [postId]);
 
   const handleLikeComment = async (commentId) => {
-    // console.log("hi from handle like comment");
     try {
       if (!currentUser) {
         navigate("/sign-in");
@@ -118,8 +113,6 @@ export default function CommentSection({ postId }) {
   };
 
   const handleEdit = function (commentID, updatedComment) {
-    console.log("this is handle edit.. ");
-    console.log(commentID, updatedComment);
     setComments(
       comments.map((comment) => {
         return comment._id === commentID

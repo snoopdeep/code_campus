@@ -45,7 +45,6 @@ export default function ForgotPassword() {
       );
 
       const data = await res.json();
-      console.log("ForgotPassword.jsx response data:", data);
 
       if (res.ok && data.status === "success") {
         setForgotSuccessMessage(

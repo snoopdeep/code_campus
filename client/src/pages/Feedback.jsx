@@ -60,7 +60,6 @@ const FeedbackForm = () => {
       setFailureMessage(err.message);
     }
   };
-  console.log("current user", currentUser);
 
   useEffect(() => {
     const timer = setTimeout(() => {

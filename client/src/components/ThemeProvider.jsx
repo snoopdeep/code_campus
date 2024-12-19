@@ -12,4 +12,3 @@ export default function ThemeProvider({children}) {
     </div>
   )
 }
-// dark:bg-[rgb(16,23,42)]

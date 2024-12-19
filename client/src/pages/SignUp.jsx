@@ -56,24 +56,18 @@ export default function SignUp() {
       });
       const timer = setTimeout(() => {
         setErrorMessage(null);
-      }, 5000);
+      }, 7000);
       return () => clearTimeout(timer);
     }
 
     if (successMessage) {
       const timer = setTimeout(() => {
         setSuccessMessage(null);
-      }, 5000);
+      }, 7000);
       return () => clearTimeout(timer);
     }
   }, [errorMessage, successMessage]);
 
-  // function to check the usn allign with the email address..
-  // function isUSNAligned(usn, email) {
-  //   const emailPrefix = email.split("@")[0];
-
-  //   return usn.toLowerCase() === emailPrefix.toLowerCase();
-  // }
   // check password compitability
   function checkPassword(str) {
     var re = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
@@ -99,12 +93,7 @@ export default function SignUp() {
     ) {
       return setErrorMessage("Please fill all the fields");
     }
-    // if (!isUSNAligned(formData.USN, formData.email)) {
-    //   return setErrorMessage(
-    //     `The provided USN "${formData.USN}" does not match the email "${formData.email}". ` +
-    //       `Please ensure you are using the correct email associated with your USN.`
-    //   );
-    // }
+
     if (!checkPassword(formData.password)) {
       return setErrorMessage(
         "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character."
@@ -457,13 +446,13 @@ export default function SignUp() {
           {/* Link to Sign In */}
           <div className="flex gap-2 text-sm mt-5">
             <span>Already have an account?</span>
-            <Link to={"/sign-in"} className="text-blue-500">
+            <Link to={"/sign-in"} className="text-blue-500 font-semibold">
               Sign In
             </Link>
           </div>
           <div className="flex gap-2 text-sm mt-5">
             <span> Forgot Password:</span>
-            <Link to={"/forgot-password"} className="text-blue-500">
+            <Link to={"/forgot-password"} className="text-blue-500 font-semibold">
               Reset Password
             </Link>
           </div>

@@ -9,7 +9,6 @@ export default function Home() {
   const [posts, setPost] = useState([]);
   const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
-  console.log("current user is :", currentUser);
   useEffect(() => {
     const fetchPosts = async () => {
       const res = await fetch("http://localhost:3000/api/post/getAllPosts", {
@@ -22,7 +21,6 @@ export default function Home() {
     fetchPosts();
   }, []);
 
-  console.log(posts);
   const handleImageClick = () => {
     if (currentUser) {
       navigate("/create-post");
@@ -31,6 +29,15 @@ export default function Home() {
     }
   };
 
+  function clearExpiredCookies(){
+    const cookies= document.cookie.split("; ");
+    cookies.forEach((cookie)=>{
+      const [name,value]=cookie.split("=");
+      if(name==="access_token"){
+        const expiration= localStorage.getItem("")
+      }
+    })
+  }
   return (
     <div>
       <div className="flex flex-col lg:flex-row gap-10 lg:gap-20 p-6 lg:p-28 px-3 max-w-6xl mx-auto">

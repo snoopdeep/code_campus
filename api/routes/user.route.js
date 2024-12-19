@@ -11,7 +11,6 @@ import {
   paymentSuccess
 } from "../controllers/user.controller.js";
 import { verifyToken } from "../util/verifyUser.js";
-console.log("Hello from user route!!");
 
 router.get("/getusers", verifyToken, getUsers);
 router.put("/update/:userId", verifyToken, updateUser);

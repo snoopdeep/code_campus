@@ -7,7 +7,6 @@ export default function CallToAction() {
   const [amount, setAmount] = useState("");
   const [paymentError, setPaymentError] = useState(null);
   const { currentUser } = useSelector((state) => state.user);
-  console.log("current user is ::", currentUser);
 
   const handleDonate = async () => {
     if (!currentUser) {
@@ -47,7 +46,6 @@ export default function CallToAction() {
         name: "AceConnect Donation",
         description: "Support AceConnect and help us grow!",
         handler: async function (response) {
-          console.log("Payment successful", response);
           // Handle payment success, maybe notify the user or update the database
           const res = await fetch(
             "http://localhost:3000/api/users/payment-success",
@@ -70,7 +68,7 @@ export default function CallToAction() {
             setPaymentError("something went wrong!");
             return;
           } else {
-            console.log("mail send successfully and payment done!");
+            // console.log("mail send successfully and payment done!");
             return;
           }
         },

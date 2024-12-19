@@ -36,7 +36,7 @@ export default function CreatePost() {
   const [showModel, setShowModel] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
-    category: "uncategorized",
+    category: "",
     content: "",
     image: "",
   });
@@ -216,7 +216,6 @@ export default function CreatePost() {
         body: JSON.stringify(formData),
       });
       const data = await res.json();
-      console.log("this is create post.jsx and data is ", data);
       if (!res.ok) {
         setPublishError(data.message);
         setLoading(false);
@@ -231,7 +230,7 @@ export default function CreatePost() {
         setTimeout(() => {
           setShowModel(false);
           navigate("/");
-        }, 8000);
+        }, 5000);
       }
     } catch (error) {
       setPublishError("Something went wrong");
@@ -247,8 +246,9 @@ export default function CreatePost() {
     }, 5000);
     return () => clearTimeout(timer);
   }, [publishError, publishSuccess]);
-  console.log("this is CreatePost.jsx and formData is :", formData);
-  console.log("Loading state in CreatePost:", loading);
+
+
+  
   return (
     <div className="p-3 max-w-3xl mx-auto min-h-screen">
       <h1 className="text-center text-3xl my-7 font-semibold">Create a Post</h1>
@@ -273,8 +273,8 @@ export default function CreatePost() {
           >
             <option value="uncategorized">Select a category</option>
             <option value="technology">Leetcode</option>
-            <option value="lifestyle">Interview</option>
-            <option value="food">Other tech</option>
+            <option value="Interview">Interview</option>
+            <option value="Other tech">Other tech</option>
           </Select>
         </div>
         <div className="flex gap-4 items-center justify-between border-4 border-teal-500 border-dotted p-3">
@@ -314,7 +314,7 @@ export default function CreatePost() {
           modules={modules}
           formats={formats}
         />
-        <Button type="submit" gradientDuoTone="purpleToPink" disabled={loading}>
+        <Button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white dark:bg-blue-500 dark:hover:bg-blue-600" disabled={loading}>
           {loading ? (
             <div className="flex items-center">
               <Spinner size="sm" aria-label="Loading..." />
